@@ -38,7 +38,7 @@
       </toggleGroup>
   </RadioButton>
   <RadioButton mnemonicParsing="false" text="Guest" toggleGroup="$connectionGroup" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-  <Button fx:id="hostButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#onButtonClick" text="Host" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" />
+  <Button fx:id="hostButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onMouseClicked="#onHostButtonClick" text="Start server" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" />
   <Label text="Display name:" GridPane.rowIndex="5" />
   <TextField fx:id="displayNameField" GridPane.columnIndex="1" GridPane.rowIndex="5" />
    <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="4" />
