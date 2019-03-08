@@ -13,7 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 
-public class FXMLController implements Initializable {
+public class MainMenuController implements Initializable {
 
   @FXML
   public ToggleGroup connectionGroup;
