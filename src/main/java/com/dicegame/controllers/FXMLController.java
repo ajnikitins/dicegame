@@ -1,4 +1,4 @@
-package com.dicegame.controller;
+package com.dicegame.controllers;
 
 import com.dicegame.enums.ConnectionState;
 import java.net.URL;
