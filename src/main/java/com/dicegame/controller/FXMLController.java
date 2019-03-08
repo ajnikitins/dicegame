@@ -36,7 +36,7 @@ public class FXMLController implements Initializable {
 
   @FXML
   private void onButtonClick() {
-    System.out.println(1);
+
   }
 
 }
