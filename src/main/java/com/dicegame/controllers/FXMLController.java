@@ -1,11 +1,14 @@
 package com.dicegame.controllers;
 
 import com.dicegame.enums.ConnectionState;
+import com.dicegame.enums.ConnectionStatus;
+import com.dicegame.utilities.Validations;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
@@ -32,6 +35,8 @@ public class FXMLController implements Initializable {
 
   private ConnectionState connectionState = ConnectionState.HOST;
 
+  private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+
   @Override
   public void initialize(URL location, ResourceBundle resources) {
     connectionGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
@@ -42,20 +47,27 @@ public class FXMLController implements Initializable {
 
       if (connectionState == ConnectionState.HOST) {
         connectionState = ConnectionState.GUEST;
-        ipField.setDisable(false);
-        roomSizeField.setDisable(true);
-        hostButton.setText("Connect");
 
+        ipField.setDisable(false);
+
+        roomSizeField.setDisable(true);
+
+        hostButton.setText("Connect");
       } else {
         connectionState = ConnectionState.HOST;
+
         ipField.setText("localhost");
         ipField.setDisable(true);
+
         roomSizeField.setDisable(false);
-        hostButton.setText("Host");
+        roomSizeField.setText("5");
+
+        hostButton.setText("Start server");
       }
     });
 
     portField.textProperty().addListener((observable, oldValue, newValue) -> {
+
       if (!newValue.matches("\\d*")) {
         portField.setText(newValue.replaceAll("\\D+", ""));
       }
@@ -70,6 +82,7 @@ public class FXMLController implements Initializable {
     });
 
     roomSizeField.textProperty().addListener((observable, oldValue, newValue) -> {
+
       if (!newValue.matches("\\d*")) {
         roomSizeField.setText(newValue.replaceAll("\\D+", ""));
       }
@@ -81,13 +94,54 @@ public class FXMLController implements Initializable {
           roomSizeField.setText("100");
         }
       }
-
     });
   }
 
   @FXML
-  private void onButtonClick() {
+  private void onHostButtonClick() {
+//    TODO: Figure out how to colour fields and still display error message
+//    Border errorBorder = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT));
 
+    String errorMessage = "";
+
+    Alert errorAlert = new Alert(AlertType.ERROR);
+    errorAlert.setHeaderText(null);
+
+    if (displayNameField.getText().equals("")) {
+      errorMessage += "Missing display name.\n";
+    }
+
+    if (connectionState == ConnectionState.GUEST) {
+
+      if (ipField.getText().equals("")) {
+        errorMessage += "Missing host IP address.\n";
+      }
+
+      if (!Validations.isValidIpAddress(ipField.getText())) {
+        errorMessage += "Malformed IP address.\n";
+      }
+    }
+
+    if (portField.getText().equals("")) {
+      errorMessage += "Missing port.\n";
+    }
+
+    if (connectionState == ConnectionState.HOST && Integer.parseInt(roomSizeField.getText()) < 2) {
+      errorMessage += "Room cannot be smaller than 2.\n";
+    }
+
+    if (!errorMessage.equals("")) {
+      errorAlert.setContentText(errorMessage);
+      errorAlert.showAndWait();
+      return;
+    }
+
+    if (connectionState == ConnectionState.HOST) {
+
+    } else {
+
+
+    }
   }
 
 }
