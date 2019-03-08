@@ -1,6 +1,7 @@
 package com.dicegame;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,6 +19,8 @@ public class Main extends Application {
     primaryStage.setTitle("Poker Dice");
     primaryStage.setScene(scene);
     primaryStage.show();
+
+    primaryStage.onCloseRequestProperty().setValue(e -> Platform.exit());
   }
 
   public static void main(String[] args) {
