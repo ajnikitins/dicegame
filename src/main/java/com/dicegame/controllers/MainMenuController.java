@@ -84,6 +84,35 @@ public class MainMenuController implements Initializable {
     hostButton.setText(isHost ? "Connect" : "Start server");
   }
 
+  private String checkInputs() {
+    String errorMessage = "";
+
+    if (displayNameField.getText().equals("")) {
+      errorMessage += "Missing display name.\n";
+    }
+
+    if (connectionRole == ConnectionRole.GUEST) {
+
+      if (ipField.getText().equals("")) {
+        errorMessage += "Missing host IP address.\n";
+      }
+
+      if (!Validations.isValidIpAddress(ipField.getText())) {
+        errorMessage += "Malformed IP address.\n";
+      }
+    }
+
+    if (portField.getText().equals("")) {
+      errorMessage += "Missing port.\n";
+    }
+
+    if (connectionRole == ConnectionRole.HOST
+        && Integer.parseInt(roomSizeField.getText()) < 2) {
+      errorMessage += "Room cannot be smaller than 2.\n";
+    }
+
+    return errorMessage;
+  }
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -100,35 +129,10 @@ public class MainMenuController implements Initializable {
 //    TODO: Figure out how to colour fields and still display error message
 //    Border errorBorder = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT));
 
-      String errorMessage = "";
-
       Alert errorAlert = new Alert(AlertType.WARNING);
       errorAlert.setHeaderText(null);
 
-      if (displayNameField.getText().equals("")) {
-        errorMessage += "Missing display name.\n";
-      }
-
-      if (connectionRole == ConnectionRole.GUEST) {
-
-        if (ipField.getText().equals("")) {
-          errorMessage += "Missing host IP address.\n";
-        }
-
-        if (!Validations.isValidIpAddress(ipField.getText())) {
-          errorMessage += "Malformed IP address.\n";
-        }
-      }
-
-      if (portField.getText().equals("")) {
-        errorMessage += "Missing port.\n";
-      }
-
-      if (connectionRole == ConnectionRole.HOST
-          && Integer.parseInt(roomSizeField.getText()) < 2) {
-        errorMessage += "Room cannot be smaller than 2.\n";
-      }
-
+      String errorMessage = checkInputs();
       if (!errorMessage.equals("")) {
         errorAlert.setContentText(errorMessage);
         errorAlert.showAndWait();
