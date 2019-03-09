@@ -1,6 +1,4 @@
-package com.dicegame.players;
-
-import java.io.IOException;
+package com.dicegame.endpoints;
 
 public class Server {
 

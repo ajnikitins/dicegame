@@ -1,4 +1,4 @@
-package com.dicegame.players;
+package com.dicegame.endpoints;
 
 import com.dicegame.controllers.GameMenuController;
 import java.io.IOException;

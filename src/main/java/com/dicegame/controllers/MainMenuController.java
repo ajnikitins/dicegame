@@ -2,8 +2,8 @@ package com.dicegame.controllers;
 
 import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
-import com.dicegame.players.Client;
-import com.dicegame.players.Server;
+import com.dicegame.endpoints.Client;
+import com.dicegame.endpoints.Server;
 import com.dicegame.utilities.Validations;
 import java.net.URL;
 import java.util.ResourceBundle;
