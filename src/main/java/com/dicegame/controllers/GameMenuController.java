@@ -1,6 +1,5 @@
 package com.dicegame.controllers;
 
-import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -28,13 +27,7 @@ public class GameMenuController implements Initializable {
   @FXML
   private Label statusLabel;
 
-  private ConnectionRole connectionRole;
-
   private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
-
-  public void setConnectionRole(ConnectionRole connectionRole) {
-    this.connectionRole = connectionRole;
-  }
 
   public void load() {
 
