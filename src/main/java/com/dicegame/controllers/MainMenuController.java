@@ -1,6 +1,6 @@
 package com.dicegame.controllers;
 
-import com.dicegame.enums.ConnectionState;
+import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
 import com.dicegame.utilities.Validations;
 import java.net.URL;
@@ -33,7 +33,7 @@ public class MainMenuController implements Initializable {
   @FXML
   private Button hostButton;
 
-  private ConnectionState connectionState = ConnectionState.HOST;
+  private ConnectionRole connectionRole = ConnectionRole.HOST;
 
   private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 

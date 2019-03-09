@@ -1,5 +1,5 @@
 package com.dicegame.enums;
 
-public enum ConnectionState {
+public enum ConnectionRole {
   HOST, GUEST
 }
