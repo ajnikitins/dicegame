@@ -2,21 +2,19 @@ package com.dicegame.controllers;
 
 import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
+import com.dicegame.players.Client;
+import com.dicegame.players.Server;
 import com.dicegame.utilities.Validations;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.stage.Stage;
 
 public class MainMenuController implements Initializable {
 
@@ -42,7 +40,9 @@ public class MainMenuController implements Initializable {
 
   private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
-  private GameMenuController gameMenuController = null;
+  private Client client;
+
+  private Server server;
 
   private void setConnectionStatus(ConnectionStatus newStatus) {
     boolean isConnecting = newStatus == ConnectionStatus.CONNECTED;
@@ -138,21 +138,17 @@ public class MainMenuController implements Initializable {
         return;
       }
 
-      FXMLLoader gameFxmlLoader = new FXMLLoader(getClass().getResource("gameMenu.fxml"));
-      Parent gameRoot = gameFxmlLoader.load();
-      Stage gameStage = new Stage();
+      if (connectionRole == ConnectionRole.HOST) {
+        server = new Server(Integer.parseInt(portField.getText()), Integer.parseInt(roomSizeField.getText()), displayNameField.getText());
+      }
 
-      gameMenuController = gameFxmlLoader.getController();
-
-      gameStage.setScene(new Scene(gameRoot));
-      gameStage.show();
-
-      gameStage.setOnHiding(e -> setConnectionStatus(ConnectionStatus.DISCONNECTED));
+      client = new Client(ipField.getText(), Integer.parseInt(portField.getText()), displayNameField.getText());
+      client.setOnHiding(() -> setConnectionStatus(ConnectionStatus.DISCONNECTED));
 
       setConnectionStatus(ConnectionStatus.CONNECTED);
     } else {
       setConnectionStatus(ConnectionStatus.DISCONNECTED);
-      gameMenuController.stop();
+      client.stop();
     }
   }
 
