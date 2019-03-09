@@ -28,13 +28,8 @@ public class GameMenuController implements Initializable {
   @FXML
   private Label statusLabel;
 
-  private ConnectionRole connectionRole;
-
   private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
-  public void setConnectionRole(ConnectionRole connectionRole) {
-    this.connectionRole = connectionRole;
-  }
 
   public void load() {
 

@@ -141,8 +141,6 @@ public class MainMenuController implements Initializable {
 
       gameMenuController = gameFxmlLoader.getController();
 
-      gameMenuController.setConnectionRole(connectionRole);
-
       gameStage.setScene(new Scene(gameRoot));
       gameStage.show();
 
