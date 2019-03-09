@@ -129,11 +129,10 @@ public class MainMenuController implements Initializable {
 //    TODO: Figure out how to colour fields and still display error message
 //    Border errorBorder = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT));
 
-      Alert errorAlert = new Alert(AlertType.WARNING);
-      errorAlert.setHeaderText(null);
-
       String errorMessage = checkInputs();
       if (!errorMessage.equals("")) {
+        Alert errorAlert = new Alert(AlertType.WARNING);
+        errorAlert.setHeaderText(null);
         errorAlert.setContentText(errorMessage);
         errorAlert.showAndWait();
         return;
