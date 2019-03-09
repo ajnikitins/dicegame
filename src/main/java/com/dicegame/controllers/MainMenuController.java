@@ -116,11 +116,14 @@ public class MainMenuController implements Initializable {
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
-    connectionGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> switchConnectionRoll());
+    connectionGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) ->
+        switchConnectionRoll());
 
-    portField.textProperty().addListener((observable, oldValue, newValue) -> Validations.filterNumberField(portField, 65535, newValue));
+    portField.textProperty().addListener((observable, oldValue, newValue) ->
+        Validations.filterNumberField(portField, 65535, newValue));
 
-    roomSizeField.textProperty().addListener((observable, oldValue, newValue) -> Validations.filterNumberField(roomSizeField, 100, newValue));
+    roomSizeField.textProperty().addListener((observable, oldValue, newValue) ->
+        Validations.filterNumberField(roomSizeField, 100, newValue));
   }
 
   @FXML
@@ -139,10 +142,19 @@ public class MainMenuController implements Initializable {
       }
 
       if (connectionRole == ConnectionRole.HOST) {
-        server = new Server(Integer.parseInt(portField.getText()), Integer.parseInt(roomSizeField.getText()), displayNameField.getText());
+        server = new Server(
+            Integer.parseInt(portField.getText()),
+            Integer.parseInt(roomSizeField.getText()),
+            displayNameField.getText()
+        );
       }
 
-      client = new Client(ipField.getText(), Integer.parseInt(portField.getText()), displayNameField.getText());
+      client = new Client(
+          ipField.getText(),
+          Integer.parseInt(portField.getText()),
+          displayNameField.getText()
+      );
+
       client.setOnHiding(() -> setConnectionStatus(ConnectionStatus.DISCONNECTED));
 
       setConnectionStatus(ConnectionStatus.CONNECTED);
