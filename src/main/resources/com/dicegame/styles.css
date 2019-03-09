@@ -1,3 +1,4 @@
-.button {
-  -fx-font-weight: bold;
+#rollButton {
+  -fx-background-radius: 0;
+  -fx-background-insets: 0px;
 }
