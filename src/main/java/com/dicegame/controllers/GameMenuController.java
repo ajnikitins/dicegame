@@ -45,5 +45,4 @@ public class GameMenuController implements Initializable {
     // TODO: Implement stop
   }
 
-
 }
