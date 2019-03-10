@@ -1,42 +1,82 @@
 package com.dicegame.endpoints;
 
-import com.dicegame.controllers.GameMenuController;
+import java.io.BufferedReader;
 import java.io.IOException;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.SocketException;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
-public class Client {
+public class Client extends Thread {
 
-  public Client(String ip, int port, String displayName) throws IOException {
-    this.ip = ip;
-    this.port = port;
-    this.displayName = displayName;
+  private Socket clientSocket;
+  private BufferedReader in;
+  private PrintWriter out;
+  private ObservableList<String> chatLog;
 
-    FXMLLoader gameFxmlLoader = new FXMLLoader(getClass().getResource("gameMenu.fxml"));
-    Parent gameRoot = gameFxmlLoader.load();
-    Stage gameStage = new Stage();
-    gameStage.setOnHiding(e -> stop());
-    gameStage.setScene(new Scene(gameRoot));
-    gameStage.show();
+  public Client(String ip, int port, String name) throws IOException {
+    clientSocket = new Socket(ip, port);
 
-    gameMenuController = gameFxmlLoader.getController();
+    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+    out = new PrintWriter(clientSocket.getOutputStream(), true);
+
+    chatLog = FXCollections.observableArrayList();
+
+    out.println(name);
   }
 
-  private String ip;
-  private int port;
-  private String displayName;
-
-  private GameMenuController gameMenuController;
-  private Runnable onHiding;
-
-  public void setOnHiding(Runnable onHiding) {
-    this.onHiding = onHiding;
+  public ObservableList<String> getChatLog() {
+    return chatLog;
   }
 
-  public void stop() {
-    gameMenuController.stop();
-    onHiding.run();
+  public void send(String command, String body) {
+    out.println(command);
+    out.println(body);
+  }
+
+  @Override
+  public void run() {
+    while (!isInterrupted()) {
+      try {
+        final String command = in.readLine();
+        final String body = in.readLine();
+
+        switch (command) {
+          case "message":
+            Platform.runLater(() -> chatLog.add(body));
+            break;
+          case "exit":
+            clientSocket.close();
+            break;
+          case "error":
+            clientSocket.close();
+            switch (body) {
+              case "ReachedMaxRoom":
+                Platform.runLater(() -> chatLog.add("Room is full, please try again later!"));
+                break;
+            }
+            break;
+        }
+
+      } catch (SocketException e) {
+        Platform.runLater(() -> chatLog.add("Disconnected from server"));
+        break;
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void close() {
+    send("exit", "");
+    try {
+      clientSocket.close();
+    } catch (IOException e) {
+      Platform.runLater(() -> chatLog.add("Error: Failed to close socket"));
+    }
+    interrupt();
   }
 }

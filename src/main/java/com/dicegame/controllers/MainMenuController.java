@@ -1,20 +1,24 @@
 package com.dicegame.controllers;
 
+import com.dicegame.endpoints.Server;
 import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
-import com.dicegame.endpoints.Client;
-import com.dicegame.endpoints.Server;
 import com.dicegame.utilities.Validations;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.stage.Stage;
 
 public class MainMenuController implements Initializable {
 
@@ -40,7 +44,9 @@ public class MainMenuController implements Initializable {
 
   private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
-  private Client client;
+  private Stage serverStage;
+
+  private Stage clientStage;
 
   private Server server;
 
@@ -64,7 +70,7 @@ public class MainMenuController implements Initializable {
     connectionStatus = newStatus;
   }
 
-  private void switchConnectionRoll() {
+  private void switchConnectionRole() {
     if (portField.getText().equals("")) {
       portField.setText("35555");
     }
@@ -117,7 +123,7 @@ public class MainMenuController implements Initializable {
   @Override
   public void initialize(URL location, ResourceBundle resources) {
     connectionGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) ->
-        switchConnectionRoll());
+        switchConnectionRole());
 
     portField.textProperty().addListener((observable, oldValue, newValue) ->
         Validations.filterNumberField(portField, 65535, newValue));
@@ -127,7 +133,7 @@ public class MainMenuController implements Initializable {
   }
 
   @FXML
-  private void onHostButtonClick() throws Exception {
+  private void onHostButtonClick() {
     if (connectionStatus == ConnectionStatus.DISCONNECTED) {
 //    TODO: Figure out how to colour fields and still display error message
 //    Border errorBorder = new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT));
@@ -141,27 +147,76 @@ public class MainMenuController implements Initializable {
         return;
       }
 
+      setConnectionStatus(ConnectionStatus.CONNECTED);
+
       if (connectionRole == ConnectionRole.HOST) {
-        server = new Server(
+
+        FXMLLoader gameFxmlLoader = new FXMLLoader(getClass().getResource("/com/dicegame/views/serverMenu.fxml"));
+        Parent serverRoot;
+
+        try {
+          serverRoot = gameFxmlLoader.load();
+        } catch (IOException e) {
+          System.out.println("Failed to read serverMenu.fxml");
+          return;
+        }
+
+        serverStage = new Stage();
+
+        ServerMenuController controller = gameFxmlLoader.getController();
+        serverStage.setOnHiding(e -> {
+          controller.stop();
+          disconnect();
+        });
+
+        serverStage.setScene(new Scene(serverRoot));
+        serverStage.setResizable(false);
+        serverStage.show();
+
+        controller.createServer(
             Integer.parseInt(portField.getText()),
-            Integer.parseInt(roomSizeField.getText()),
-            displayNameField.getText()
+            Integer.parseInt(roomSizeField.getText())
         );
+
       }
 
-      client = new Client(
+      FXMLLoader gameFxmlLoader = new FXMLLoader(getClass().getResource("/com/dicegame/views/gameMenu.fxml"));
+      Parent clientRoot;
+
+      try {
+        clientRoot = gameFxmlLoader.load();
+      } catch (IOException e) {
+        System.out.println("Failed to read gameMenu.fxml");
+        return;
+      }
+
+      clientStage = new Stage();
+
+      ClientMenuController controller = gameFxmlLoader.getController();
+      clientStage.setOnHiding(e -> {
+        controller.stop();
+        disconnect();
+      });
+
+      clientStage.setScene(new Scene(clientRoot));
+      clientStage.setResizable(false);
+      clientStage.show();
+
+      controller.createClient(
           ipField.getText(),
           Integer.parseInt(portField.getText()),
           displayNameField.getText()
       );
-
-      client.setOnHiding(() -> setConnectionStatus(ConnectionStatus.DISCONNECTED));
-
-      setConnectionStatus(ConnectionStatus.CONNECTED);
     } else {
-      setConnectionStatus(ConnectionStatus.DISCONNECTED);
-      client.stop();
+      disconnect();
     }
   }
 
+  private void disconnect() {
+    setConnectionStatus(ConnectionStatus.DISCONNECTED);
+    clientStage.hide();
+    if (connectionRole == ConnectionRole.HOST) {
+      serverStage.hide();
+    }
+  }
 }

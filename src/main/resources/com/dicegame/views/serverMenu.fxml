@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+  prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8"
+  xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dicegame.controllers.ServerMenuController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="516.0" minWidth="10.0" prefWidth="467.0"/>
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="133.0"/>
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints vgrow="ALWAYS"/>
+    <RowConstraints maxHeight="400.0" minHeight="10.0" prefHeight="372.0" vgrow="SOMETIMES"/>
+  </rowConstraints>
+  <padding>
+    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+  </padding>
+  <Label text="Server Log:"/>
+  <Label text="Client List:" GridPane.columnIndex="1"/>
+  <ListView fx:id="serverLog" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1"/>
+  <ListView fx:id="clientList" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1"
+    GridPane.rowIndex="1"/>
+</GridPane>
