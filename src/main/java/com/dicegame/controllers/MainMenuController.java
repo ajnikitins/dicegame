@@ -8,6 +8,7 @@ import com.dicegame.utils.Validations;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -44,11 +45,7 @@ public class MainMenuController implements Initializable {
 
   private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
-  private Stage serverStage;
-
-  private Stage clientStage;
-
-  private Server server;
+  private CopyOnWriteArrayList<Stage> stages = new CopyOnWriteArrayList<>();
 
   private void setConnectionStatus(ConnectionStatus newStatus) {
     boolean isConnecting = newStatus == ConnectionStatus.CONNECTED;
@@ -146,60 +143,29 @@ public class MainMenuController implements Initializable {
 
       setConnectionStatus(ConnectionStatus.CONNECTED);
 
-      if (connectionRole == ConnectionRole.HOST) {
-
-        FXMLLoader gameFxmlLoader = new FXMLLoader(getClass().getResource("/com/dicegame/views/serverMenu.fxml"));
-        Parent serverRoot;
-
-        try {
-          serverRoot = gameFxmlLoader.load();
-        } catch (IOException e) {
-          System.out.println("Failed to read serverMenu.fxml");
-          return;
-        }
-
-        serverStage = new Stage();
-
-        ServerMenuController controller = gameFxmlLoader.getController();
-        serverStage.setOnHiding(e -> {
-          controller.stop();
-          disconnect();
-        });
-
-        serverStage.setScene(new Scene(serverRoot));
-        serverStage.setResizable(false);
-        serverStage.show();
-
-        controller.createServer(
-            Integer.parseInt(portField.getText()),
-            Integer.parseInt(roomSizeField.getText())
-        );
-
-      }
-
-      FXMLLoader gameFxmlLoader = new FXMLLoader(getClass().getResource("/com/dicegame/views/gameMenu.fxml"));
-      Parent clientRoot;
-
+      ClientMenuController clientMenuController;
       try {
-        clientRoot = gameFxmlLoader.load();
+        clientMenuController = loadScene("/com/dicegame/views/gameMenu.fxml");
       } catch (IOException e) {
         System.out.println("Failed to read gameMenu.fxml");
         return;
       }
 
-      clientStage = new Stage();
+      ServerMenuController serverMenuController;
+      if (connectionRole == ConnectionRole.HOST) {
+        try {
+          serverMenuController = loadScene("/com/dicegame/views/serverMenu.fxml");
+          serverMenuController.createServer(
+              Integer.parseInt(portField.getText()),
+              Integer.parseInt(roomSizeField.getText())
+          );
+        } catch (IOException e) {
+          System.out.println("Failed to read serverMenu.fxml");
+          return;
+        }
+      }
 
-      ClientMenuController controller = gameFxmlLoader.getController();
-      clientStage.setOnHiding(e -> {
-        controller.stop();
-        disconnect();
-      });
-
-      clientStage.setScene(new Scene(clientRoot));
-      clientStage.setResizable(false);
-      clientStage.show();
-
-      controller.createClient(
+      clientMenuController.createClient(
           ipField.getText(),
           Integer.parseInt(portField.getText()),
           displayNameField.getText()
@@ -210,10 +176,32 @@ public class MainMenuController implements Initializable {
   }
 
   private void disconnect() {
-    setConnectionStatus(ConnectionStatus.DISCONNECTED);
-    clientStage.hide();
-    if (connectionRole == ConnectionRole.HOST) {
-      serverStage.hide();
+    for (Stage stage: stages) {
+      if (stage.isShowing()) {
+        stage.hide();
+        stages.remove(stage);
+      }
     }
+    setConnectionStatus(ConnectionStatus.DISCONNECTED);
+  }
+
+  private <T extends Stoppable> T loadScene(String path) throws IOException {
+    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(path));
+    Parent root = fxmlLoader.load();
+
+    Stage stage = new Stage();
+
+    T controller = fxmlLoader.getController();
+    stage.setOnHidden(e -> {
+      controller.stop();
+      disconnect();
+    });
+
+    stage.setScene(new Scene(root));
+    stage.setResizable(false);
+    stage.show();
+    stages.add(stage);
+
+    return controller;
   }
 }
