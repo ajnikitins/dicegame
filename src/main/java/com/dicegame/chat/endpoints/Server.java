@@ -34,10 +34,6 @@ public class Server extends Thread {
     return clientNames;
   }
 
-  public ServerSocket getSocket() {
-    return socket;
-  }
-
   int getRoomSize() {
     return roomSize;
   }
