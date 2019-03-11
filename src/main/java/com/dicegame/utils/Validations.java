@@ -1,4 +1,4 @@
-package com.dicegame.utilities;
+package com.dicegame.utils;
 
 import java.util.regex.Pattern;
 import javafx.scene.control.TextField;

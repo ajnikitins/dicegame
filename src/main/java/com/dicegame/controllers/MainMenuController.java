@@ -3,7 +3,7 @@ package com.dicegame.controllers;
 import com.dicegame.endpoints.Server;
 import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
-import com.dicegame.utilities.Validations;
+import com.dicegame.utils.Validations;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
