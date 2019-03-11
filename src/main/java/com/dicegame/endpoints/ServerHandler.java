@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import javafx.application.Platform;
 
-public class ServerClientHandler extends Thread {
+public class ServerHandler extends Thread {
 
   private Socket clientSocket;
   private Server baseServer;
@@ -16,7 +16,7 @@ public class ServerClientHandler extends Thread {
   private PrintWriter out;
   private String clientName;
 
-  ServerClientHandler(Server baseServer, Socket clientSocket) {
+  ServerHandler(Server baseServer, Socket clientSocket) {
     this.clientSocket = clientSocket;
     this.baseServer = baseServer;
 

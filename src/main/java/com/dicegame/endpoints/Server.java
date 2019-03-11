@@ -12,7 +12,7 @@ import javafx.collections.ObservableList;
 public class Server extends Thread {
 
   private ServerSocket socket;
-  private ArrayList<ServerClientHandler> clients;
+  private ArrayList<ServerHandler> clients;
   private ObservableList<String> serverLog;
   private ObservableList<String> clientNames;
   private int roomSize;
@@ -41,7 +41,7 @@ public class Server extends Thread {
     return roomSize;
   }
 
-  ArrayList<ServerClientHandler> getClients() {
+  ArrayList<ServerHandler> getClients() {
     return clients;
   }
 
@@ -56,7 +56,7 @@ public class Server extends Thread {
           + clientSocket.getRemoteSocketAddress()
           + " connected"
         ));
-        ServerClientHandler clientHandler = new ServerClientHandler(this, clientSocket);
+        ServerHandler clientHandler = new ServerHandler(this, clientSocket);
         clients.add(clientHandler);
         clientHandler.setDaemon(true);
         clientHandler.setName("Client Thread " + clients.size());
@@ -68,7 +68,7 @@ public class Server extends Thread {
     }
   }
 
-  void clientDisconnected(ServerClientHandler client) {
+  void clientDisconnected(ServerHandler client) {
     client.close();
     Platform.runLater(() -> {
       serverLog.add("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
@@ -78,7 +78,7 @@ public class Server extends Thread {
     });
   }
 
-  synchronized void handle(ServerClientHandler client, String command, String body) {
+  synchronized void handle(ServerHandler client, String command, String body) {
     System.out.println("Received " + command + " " + body);
     Platform.runLater(() -> serverLog.add(
       "From " + client.getClientSocket().getRemoteSocketAddress()
@@ -103,7 +103,7 @@ public class Server extends Thread {
   public void close() {
     try {
       socket.close();
-      for (ServerClientHandler client : clients) {
+      for (ServerHandler client : clients) {
         client.send("exit", "");
         client.close();
       }
