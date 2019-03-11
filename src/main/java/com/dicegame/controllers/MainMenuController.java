@@ -1,8 +1,9 @@
 package com.dicegame.controllers;
 
-import com.dicegame.chat.endpoints.Server;
 import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
+import com.dicegame.interfaces.Stoppable;
+import com.dicegame.utils.AlertFactory;
 import com.dicegame.utils.Validations;
 import java.io.IOException;
 import java.net.URL;
@@ -12,7 +13,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
@@ -140,10 +140,7 @@ public class MainMenuController implements Initializable {
 
       String errorMessage = checkInputs();
       if (!errorMessage.equals("")) {
-        Alert errorAlert = new Alert(AlertType.WARNING);
-        errorAlert.setHeaderText(null);
-        errorAlert.setContentText(errorMessage);
-        errorAlert.showAndWait();
+        AlertFactory.showAlert(AlertType.WARNING, errorMessage);
         return;
       }
 

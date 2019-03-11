@@ -1,17 +1,20 @@
 package com.dicegame.controllers;
 
 import com.dicegame.chat.endpoints.Client;
+import com.dicegame.interfaces.Stoppable;
+import com.dicegame.utils.AlertFactory;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
-public class ClientMenuController implements Initializable {
+public class ClientMenuController implements Initializable, Stoppable {
 
   @FXML private ListView<String> messageLog;
   @FXML private TextField messageField;
@@ -28,7 +31,13 @@ public class ClientMenuController implements Initializable {
       client.start();
       messageLog.setItems(client.getChatLog());
     } catch (IOException e) {
-      client.getChatLog().add("Error: Invalid IP or Port");
+      System.out.println("Failed to create Client");
+
+      AlertFactory.showAlert(
+          AlertType.ERROR,
+          "Can't reach host, try again!",
+          () -> messageField.getScene().getWindow().hide()
+      );
     }
   }
 
@@ -43,9 +52,11 @@ public class ClientMenuController implements Initializable {
   @Override
   public void initialize(URL location, ResourceBundle resources) { }
 
-  @FXML
-  void stop() {
-    client.close();
+  @Override
+  public void stop() {
+    if (client != null) {
+      client.close();
+    }
   }
 
 }
