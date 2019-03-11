@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +13,7 @@ import javafx.collections.ObservableList;
 public class Server extends Thread {
 
   private ServerSocket socket;
-  private ArrayList<ServerHandler> clients;
+  private CopyOnWriteArrayList<ServerHandler> clients;
   private ObservableList<String> serverLog;
   private ObservableList<String> clientNames;
   private int roomSize;
@@ -22,7 +22,7 @@ public class Server extends Thread {
     this.roomSize = roomSize;
     this.serverLog = FXCollections.observableArrayList();
     this.clientNames = FXCollections.observableArrayList();
-    this.clients = new ArrayList<>();
+    this.clients = new CopyOnWriteArrayList<>();
     this.socket = new ServerSocket(port);
   }
 
@@ -42,7 +42,7 @@ public class Server extends Thread {
     return roomSize;
   }
 
-  ArrayList<ServerHandler> getClients() {
+  CopyOnWriteArrayList<ServerHandler> getClients() {
     return clients;
   }
 
