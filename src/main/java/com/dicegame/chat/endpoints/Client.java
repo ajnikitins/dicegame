@@ -1,10 +1,10 @@
 package com.dicegame.chat.endpoints;
 
 import com.dicegame.chat.content.Message;
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import javafx.application.Platform;
@@ -14,19 +14,19 @@ import javafx.collections.ObservableList;
 public class Client extends Thread {
 
   private Socket clientSocket;
-  private BufferedReader in;
-  private PrintWriter out;
+  private ObjectInputStream in;
+  private ObjectOutputStream out;
   private ObservableList<String> chatLog;
 
   public Client(String ip, int port, String name) throws IOException {
     clientSocket = new Socket(ip, port);
 
-    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-    out = new PrintWriter(clientSocket.getOutputStream(), true);
+    out = new ObjectOutputStream(clientSocket.getOutputStream());
+    in = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
 
     chatLog = FXCollections.observableArrayList();
 
-    out.println(name);
+    send(new Message("name", name));
   }
 
   public ObservableList<String> getChatLog() {
@@ -34,15 +34,19 @@ public class Client extends Thread {
   }
 
   public void send(Message message) {
-    out.println(message.getCommand());
-    out.println(message.getBody());
+    try {
+      out.writeObject(message);
+    } catch (IOException e) {
+      e.printStackTrace();
+      addToLog("Error: Failed to send message");
+    }
   }
 
   @Override
   public void run() {
     while (!isInterrupted()) {
       try {
-        Message message = new Message(in.readLine(), in.readLine());
+        Message message = (Message) in.readObject();
 
         switch (message.getCommand()) {
           case "message":
@@ -57,6 +61,9 @@ public class Client extends Thread {
               case "ReachedMaxRoom":
                 addToLog("Room is full, please try again later!");
                 break;
+              case "NoName":
+                addToLog("No name specified, try again!");
+                break;
             }
             break;
         }
@@ -64,8 +71,8 @@ public class Client extends Thread {
       } catch (SocketException e) {
         addToLog("Disconnected from server");
         break;
-      } catch (IOException e) {
-        e.printStackTrace();
+      } catch (IOException | ClassNotFoundException e) {
+        addToLog("Error: Failed to receive message");
       }
     }
   }
@@ -75,7 +82,9 @@ public class Client extends Thread {
   }
 
   public void close() {
-    send(new Message("error"));
+    if (!clientSocket.isClosed()) {
+      send(new Message("exit"));
+    }
     try {
       clientSocket.close();
     } catch (IOException e) {

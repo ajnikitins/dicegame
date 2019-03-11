@@ -66,30 +66,29 @@ public class Server extends Thread {
     }
   }
 
-  void clientDisconnected(ServerHandler client) {
+  synchronized void clientDisconnected(ServerHandler client) {
     client.close();
-    Platform.runLater(() -> {
-      serverLog.add("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
-      toAll(new Message("message", String.format("%s - %s has disconnected!", client.getClientName(), client.getClientSocket().getPort())));
-      clientNames.remove(clients.indexOf(client));
-      clients.remove(client);
-    });
+    clients.remove(client);
+    Platform.runLater(() -> clientNames.remove(client.getChatName()));
+    addToLog("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
+    toAll(new Message("message", client.getChatName() + " has disconnected!"));
   }
 
-  synchronized void handle(ServerHandler client, String command, String body) {
-    System.out.println("Received " + command + " " + body);
-    Platform.runLater(() -> serverLog.add(
-      "From " + client.getClientSocket().getRemoteSocketAddress()
-        + " received command: " + command
-        + " with body: " + body));
+  synchronized void handle(ServerHandler client, Message message) {
+    System.out.println("Received " + message);
 
-    switch (command) {
+    addToLog("From " + client.getClientSocket().getRemoteSocketAddress()
+        + " received command: " + message.getCommand()
+        + " with body: " + message.getBody()
+    );
+
+    switch (message.getCommand()) {
       case "exit":
         clientDisconnected(client);
         break;
 
       case "message":
-        toAll(new Message(command, String.format("%s - %s> %s", client.getClientName(), client.getClientSocket().getPort(), body)));
+        toAll(new Message("message", client.getChatName() + "> "  + message.getBody()));
         break;
     }
   }
