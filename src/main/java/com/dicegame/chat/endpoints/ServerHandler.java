@@ -1,5 +1,6 @@
 package com.dicegame.chat.endpoints;
 
+import com.dicegame.chat.content.Message;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,10 +41,10 @@ public class ServerHandler extends Thread {
           clientName + " - " + clientSocket.getRemoteSocketAddress()
       ));
 
-      baseServer.toAll("message", String.format("%s - %s has joined!", clientName, clientSocket.getPort()));
+      baseServer.toAll(new Message("message", String.format("%s - %s has joined!", clientName, clientSocket.getPort())));
 
       if (baseServer.getClients().size() > baseServer.getRoomSize()) {
-        send("error", "ReachedMaxRoom");
+        send(new Message("error", "ReachedMaxRoom"));
         baseServer.clientDisconnected(this);
       }
 
@@ -57,9 +58,9 @@ public class ServerHandler extends Thread {
     }
   }
 
-  void send(String command, String body) {
-    out.println(command);
-    out.println(body);
+  void send(Message message) {
+    out.println(message.getCommand());
+    out.println(message.getBody());
   }
 
   String getClientName() {

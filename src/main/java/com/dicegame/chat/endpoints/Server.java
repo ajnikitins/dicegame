@@ -1,5 +1,6 @@
 package com.dicegame.chat.endpoints;
 
+import com.dicegame.chat.content.Message;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -72,7 +73,7 @@ public class Server extends Thread {
     client.close();
     Platform.runLater(() -> {
       serverLog.add("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
-      toAll("message", String.format("%s - %s has disconnected!", client.getClientName(), client.getClientSocket().getPort()));
+      toAll(new Message("message", String.format("%s - %s has disconnected!", client.getClientName(), client.getClientSocket().getPort())));
       clientNames.remove(clients.indexOf(client));
       clients.remove(client);
     });
@@ -91,20 +92,20 @@ public class Server extends Thread {
         break;
 
       case "message":
-        toAll(command, String.format("%s - %s> %s", client.getClientName(), client.getClientSocket().getPort(), body));
+        toAll(new Message(command, String.format("%s - %s> %s", client.getClientName(), client.getClientSocket().getPort(), body)));
         break;
     }
   }
 
-  synchronized void toAll(String command, String body) {
-    clients.forEach(client -> client.send(command, body));
+  synchronized void toAll(Message message) {
+    clients.forEach(client -> client.send(message));
   }
 
   public void close() {
     try {
       socket.close();
       for (ServerHandler client : clients) {
-        client.send("exit", "");
+        client.send(new Message("exit"));
         client.close();
       }
     } catch (IOException e) {

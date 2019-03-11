@@ -1,5 +1,6 @@
 package com.dicegame.chat.endpoints;
 
+import com.dicegame.chat.content.Message;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,28 +33,27 @@ public class Client extends Thread {
     return chatLog;
   }
 
-  public void send(String command, String body) {
-    out.println(command);
-    out.println(body);
+  public void send(Message message) {
+    out.println(message.getCommand());
+    out.println(message.getBody());
   }
 
   @Override
   public void run() {
     while (!isInterrupted()) {
       try {
-        final String command = in.readLine();
-        final String body = in.readLine();
+        Message message = new Message(in.readLine(), in.readLine());
 
-        switch (command) {
+        switch (message.getCommand()) {
           case "message":
-            Platform.runLater(() -> chatLog.add(body));
+            Platform.runLater(() -> chatLog.add(message.getBody()));
             break;
           case "exit":
             clientSocket.close();
             break;
           case "error":
             clientSocket.close();
-            switch (body) {
+            switch (message.getBody()) {
               case "ReachedMaxRoom":
                 Platform.runLater(() -> chatLog.add("Room is full, please try again later!"));
                 break;
@@ -71,7 +71,7 @@ public class Client extends Thread {
   }
 
   public void close() {
-    send("exit", "");
+    send(new Message("error"));
     try {
       clientSocket.close();
     } catch (IOException e) {
