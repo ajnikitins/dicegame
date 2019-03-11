@@ -22,4 +22,13 @@ public class Message {
   public String getBody() {
     return body;
   }
+
+  @Override
+  public String toString() {
+    String res = command;
+    if (!body.equals("")) {
+      res += " " + body;
+    }
+    return res;
+  }
 }
