@@ -1,6 +1,6 @@
 package com.dicegame.controllers;
 
-import com.dicegame.endpoints.Client;
+import com.dicegame.chat.endpoints.Client;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;

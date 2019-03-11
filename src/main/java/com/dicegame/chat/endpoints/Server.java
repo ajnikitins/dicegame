@@ -1,4 +1,4 @@
-package com.dicegame.endpoints;
+package com.dicegame.chat.endpoints;
 
 import java.io.IOException;
 import java.net.ServerSocket;

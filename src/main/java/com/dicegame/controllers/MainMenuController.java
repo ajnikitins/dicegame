@@ -1,6 +1,6 @@
 package com.dicegame.controllers;
 
-import com.dicegame.endpoints.Server;
+import com.dicegame.chat.endpoints.Server;
 import com.dicegame.enums.ConnectionRole;
 import com.dicegame.enums.ConnectionStatus;
 import com.dicegame.utils.Validations;
