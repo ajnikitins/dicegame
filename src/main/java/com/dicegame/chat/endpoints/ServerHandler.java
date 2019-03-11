@@ -25,7 +25,7 @@ public class ServerHandler extends Thread {
       in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
       out = new PrintWriter(clientSocket.getOutputStream(), true);
     } catch (IOException e) {
-      Platform.runLater(() -> baseServer.getServerLog().add("Error: Failed to open streams"));
+      baseServer.addToLog("Error: Failed to open streams");
     }
   }
 
@@ -54,7 +54,7 @@ public class ServerHandler extends Thread {
     } catch (SocketException e) {
       baseServer.clientDisconnected(this);
     } catch (IOException e) {
-      Platform.runLater(() -> baseServer.getServerLog().add("Error: Failed to read input"));
+      baseServer.addToLog("Error: Failed to read input");
     }
   }
 
@@ -71,7 +71,7 @@ public class ServerHandler extends Thread {
     try {
       clientSocket.close();
     } catch (IOException e) {
-      Platform.runLater(() -> baseServer.getServerLog().add("Error: Failed to close socket"));
+      baseServer.addToLog("Error: Failed to close socket");
     }
     interrupt();
   }

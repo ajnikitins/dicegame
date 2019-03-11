@@ -52,11 +52,8 @@ public class Server extends Thread {
       while (!isInterrupted()) {
         final Socket clientSocket = socket.accept();
 
-        Platform.runLater(() -> serverLog.add(
-          "Client "
-          + clientSocket.getRemoteSocketAddress()
-          + " connected"
-        ));
+        addToLog("Client " + clientSocket.getRemoteSocketAddress() + " connected");
+
         ServerHandler clientHandler = new ServerHandler(this, clientSocket);
         clients.add(clientHandler);
         clientHandler.setDaemon(true);
@@ -65,7 +62,7 @@ public class Server extends Thread {
       }
     } catch (SocketException ignored) {
     } catch (IOException e) {
-      Platform.runLater(() -> serverLog.add("Error: Failed to accept connection"));
+      addToLog("Error: Failed to accept connection");
     }
   }
 
@@ -101,6 +98,10 @@ public class Server extends Thread {
     clients.forEach(client -> client.send(message));
   }
 
+  void addToLog(String message) {
+    Platform.runLater(() -> serverLog.add(message));
+  }
+
   public void close() {
     try {
       socket.close();
@@ -109,7 +110,7 @@ public class Server extends Thread {
         client.close();
       }
     } catch (IOException e) {
-      Platform.runLater(() -> serverLog.add("Error: Failed to close socket"));
+     addToLog("Error: Failed to close socket");
     }
     interrupt();
   }
