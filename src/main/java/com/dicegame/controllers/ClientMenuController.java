@@ -39,7 +39,26 @@ public class ClientMenuController implements Initializable, Stoppable {
           "Can't reach host, try again!",
           () -> messageField.getScene().getWindow().hide()
       );
+      return;
     }
+
+    client.addHandler("message", Client::addToLog);
+    client.addHandler("error", (client, body) -> {
+      try {
+        client.getClientSocket().close();
+      } catch (IOException e) {
+        client.addToLog("Error: Failed to close socket");
+      }
+
+      switch (body) {
+        case "ReachedMaxRoom":
+          client.addToLog("Room is full, please try again later!");
+          break;
+        case "NoName":
+          client.addToLog("No name specified, try again!");
+          break;
+      }
+    });
   }
 
   @FXML

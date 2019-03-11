@@ -1,10 +1,13 @@
 package com.dicegame.chat.endpoints;
 
 import com.dicegame.chat.content.Message;
+import com.dicegame.interfaces.EventHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -17,6 +20,7 @@ public class Server extends Thread {
   private ObservableList<String> serverLog;
   private ObservableList<String> clientNames;
   private int roomSize;
+  private Map<String, EventHandler<ServerHandler>> eventHandlers;
 
   public Server(int port, int roomSize) throws IOException {
     this.roomSize = roomSize;
@@ -24,6 +28,9 @@ public class Server extends Thread {
     this.clientNames = FXCollections.observableArrayList();
     this.clients = new CopyOnWriteArrayList<>();
     this.socket = new ServerSocket(port);
+    this.eventHandlers = new HashMap<>();
+
+    addHandler("exit", (client, body) -> clientDisconnected(client));
   }
 
   public ObservableList<String> getServerLog() {
@@ -78,18 +85,20 @@ public class Server extends Thread {
         + " with body: " + message.getBody()
     );
 
-    switch (message.getCommand()) {
-      case "exit":
-        clientDisconnected(client);
-        break;
-
-      case "message":
-        toAll(new Message("message", client.getChatName() + "> "  + message.getBody()));
-        break;
+    for (Map.Entry<String, EventHandler<ServerHandler>> entry : eventHandlers.entrySet()) {
+      if (entry.getKey().equals(message.getCommand())) {
+        entry.getValue().handle(client, message.getBody());
+        return;
+      }
     }
   }
 
-  synchronized void toAll(Message message) {
+  public void addHandler(String event, EventHandler<ServerHandler> handler) {
+    eventHandlers.put(event, handler);
+  }
+
+
+  public synchronized void toAll(Message message) {
     clients.forEach(client -> client.send(message));
   }
 

@@ -1,12 +1,15 @@
 package com.dicegame.chat.endpoints;
 
 import com.dicegame.chat.content.Message;
+import com.dicegame.interfaces.EventHandler;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,20 +20,33 @@ public class Client extends Thread {
   private ObjectInputStream in;
   private ObjectOutputStream out;
   private ObservableList<String> chatLog;
+  private Map<String, EventHandler<Client>> eventHandlers;
 
   public Client(String ip, int port, String name) throws IOException {
     clientSocket = new Socket(ip, port);
-
     out = new ObjectOutputStream(clientSocket.getOutputStream());
     in = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-
     chatLog = FXCollections.observableArrayList();
+    eventHandlers = new HashMap<>();
+
+
+    addHandler("exit", (client, body) -> {
+      try {
+        clientSocket.close();
+      } catch (IOException e) {
+        addToLog("Error: Failed to close socket");
+      }
+    });
 
     send(new Message("name", name));
   }
 
   public ObservableList<String> getChatLog() {
     return chatLog;
+  }
+
+  public Socket getClientSocket() {
+    return clientSocket;
   }
 
   public void send(Message message) {
@@ -48,24 +64,11 @@ public class Client extends Thread {
       try {
         Message message = (Message) in.readObject();
 
-        switch (message.getCommand()) {
-          case "message":
-            Platform.runLater(() -> chatLog.add(message.getBody()));
-            break;
-          case "exit":
-            clientSocket.close();
-            break;
-          case "error":
-            clientSocket.close();
-            switch (message.getBody()) {
-              case "ReachedMaxRoom":
-                addToLog("Room is full, please try again later!");
-                break;
-              case "NoName":
-                addToLog("No name specified, try again!");
-                break;
-            }
-            break;
+        for (Map.Entry<String, EventHandler<Client>> entry : eventHandlers.entrySet()) {
+          if (entry.getKey().equals(message.getCommand())) {
+            entry.getValue().handle(this, message.getBody());
+            return;
+          }
         }
 
       } catch (SocketException e) {
@@ -77,7 +80,11 @@ public class Client extends Thread {
     }
   }
 
-  private void addToLog(String message) {
+  public void addHandler(String event, EventHandler<Client> handler) {
+    eventHandlers.put(event, handler);
+  }
+
+  public void addToLog(String message) {
     Platform.runLater(() -> chatLog.add(message));
   }
 

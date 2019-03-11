@@ -33,8 +33,12 @@ public class ServerHandler extends Thread {
     return clientSocket;
   }
 
-  String getChatName() {
+  public String getChatName() {
     return clientName + " - " + clientSocket.getPort();
+  }
+
+  public Server getBaseServer() {
+    return baseServer;
   }
 
   @Override

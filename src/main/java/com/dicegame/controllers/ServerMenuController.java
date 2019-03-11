@@ -1,5 +1,6 @@
 package com.dicegame.controllers;
 
+import com.dicegame.chat.content.Message;
 import com.dicegame.chat.endpoints.Server;
 import com.dicegame.interfaces.Stoppable;
 import com.dicegame.utils.AlertFactory;
@@ -11,7 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ListView;
 
-public class ServerMenuController implements Initializable, Stoppable{
+public class ServerMenuController implements Initializable, Stoppable {
 
   @FXML private ListView<String> serverLog;
   @FXML private ListView<String> clientList;
@@ -34,7 +35,12 @@ public class ServerMenuController implements Initializable, Stoppable{
           "Port is already in use, try again!",
           () -> serverLog.getScene().getWindow().hide()
       );
+      return;
     }
+
+    server.addHandler("message", (client, body) -> client.getBaseServer().toAll(
+        new Message("message", client.getChatName() + "> "  + body)
+    ));
   }
 
   @Override
