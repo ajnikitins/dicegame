@@ -55,14 +55,14 @@ public class Client extends Thread {
             clientSocket.close();
             switch (message.getBody()) {
               case "ReachedMaxRoom":
-                Platform.runLater(() -> chatLog.add("Room is full, please try again later!"));
+                addToLog("Room is full, please try again later!");
                 break;
             }
             break;
         }
 
       } catch (SocketException e) {
-        Platform.runLater(() -> chatLog.add("Disconnected from server"));
+        addToLog("Disconnected from server");
         break;
       } catch (IOException e) {
         e.printStackTrace();
@@ -70,12 +70,16 @@ public class Client extends Thread {
     }
   }
 
+  private void addToLog(String message) {
+    Platform.runLater(() -> chatLog.add(message));
+  }
+
   public void close() {
     send(new Message("error"));
     try {
       clientSocket.close();
     } catch (IOException e) {
-      Platform.runLater(() -> chatLog.add("Error: Failed to close socket"));
+      addToLog("Error: Failed to close socket");
     }
     interrupt();
   }
