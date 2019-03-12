@@ -1,6 +1,7 @@
 package com.dicegame.chat.endpoints;
 
 import com.dicegame.chat.content.Message;
+import com.dicegame.controllers.ServerMenuController;
 import com.dicegame.interfaces.EventHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -19,14 +20,14 @@ public class Server extends Thread {
   private ServerSocket socket;
   private CopyOnWriteArrayList<ServerHandler> clientHandlers;
   private ObservableList<String> serverLog;
-  private ObservableList<String> clientNames;
   private int roomSize;
   private Map<String, EventHandler<ServerHandler>> eventHandlers;
+  private ServerMenuController controller;
 
-  public Server(int port, int roomSize) throws IOException {
+  public Server(int port, int roomSize, ServerMenuController controller) throws IOException {
     this.roomSize = roomSize;
     this.serverLog = FXCollections.observableArrayList();
-    this.clientNames = FXCollections.observableArrayList();
+    this.controller = controller;
     this.clientHandlers = new CopyOnWriteArrayList<>();
     this.socket = new ServerSocket(port);
     this.eventHandlers = new HashMap<>();
@@ -38,16 +39,16 @@ public class Server extends Thread {
     return serverLog;
   }
 
-  public ObservableList<String> getClientNames() {
-    return clientNames;
-  }
-
   int getRoomSize() {
     return roomSize;
   }
 
   CopyOnWriteArrayList<ServerHandler> getClientHandlers() {
     return clientHandlers;
+  }
+
+  ServerMenuController getController() {
+    return controller;
   }
 
   @Override
@@ -73,7 +74,7 @@ public class Server extends Thread {
   synchronized void clientDisconnected(ServerHandler client) {
     client.close();
     clientHandlers.remove(client);
-    Platform.runLater(() -> clientNames.remove(client.getChatName()));
+    Platform.runLater(() -> controller.removeByName(client.getChatName()));
     addToLog("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
     toAll("message", client.getChatName() + " has disconnected!");
   }
