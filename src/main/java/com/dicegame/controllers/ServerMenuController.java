@@ -22,11 +22,6 @@ public class ServerMenuController implements Initializable, Stoppable {
   void createServer(int port, int roomSize) {
     try {
       server = new Server(port, roomSize);
-      server.setName("Server Thread");
-      server.setDaemon(true);
-      server.start();
-      serverLog.setItems(server.getServerLog());
-      clientList.setItems(server.getClientNames());
     } catch (IOException e) {
       System.out.println("Error: Invalid Port");
 
@@ -37,6 +32,12 @@ public class ServerMenuController implements Initializable, Stoppable {
       );
       return;
     }
+
+    server.setName("Server Thread");
+    server.setDaemon(true);
+    server.start();
+    serverLog.setItems(server.getServerLog());
+    clientList.setItems(server.getClientNames());
 
     server.addHandler("message", (client, body) -> client.getBaseServer().toAll(
         new Message("message", client.getChatName() + "> "  + body)

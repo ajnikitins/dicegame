@@ -27,10 +27,6 @@ public class ClientMenuController implements Initializable, Stoppable {
   void createClient(String ip, int port, String name) {
     try {
       client = new Client(ip, port, name);
-      client.setDaemon(true);
-      client.setName("Client Thread");
-      client.start();
-      messageLog.setItems(client.getChatLog());
     } catch (IOException e) {
       System.out.println("Failed to create Client");
 
@@ -41,6 +37,11 @@ public class ClientMenuController implements Initializable, Stoppable {
       );
       return;
     }
+
+    client.setDaemon(true);
+    client.setName("Client Thread");
+    client.start();
+    messageLog.setItems(client.getChatLog());
 
     client.addHandler("message", Client::addToLog);
     client.addHandler("error", (client, body) -> {
