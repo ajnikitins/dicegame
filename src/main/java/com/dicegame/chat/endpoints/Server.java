@@ -9,6 +9,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -74,7 +75,7 @@ public class Server extends Thread {
     clientHandlers.remove(client);
     Platform.runLater(() -> clientNames.remove(client.getChatName()));
     addToLog("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
-    toAll(new Message("message", client.getChatName() + " has disconnected!"));
+    toAll("message", client.getChatName() + " has disconnected!");
   }
 
   synchronized void handle(ServerHandler client, Message message) {
@@ -97,9 +98,12 @@ public class Server extends Thread {
     eventHandlers.put(event, handler);
   }
 
+  public synchronized void toAll(String command, String body) {
+    clientHandlers.forEach(client -> client.send(command, body));
+  }
 
-  public synchronized void toAll(Message message) {
-    clientHandlers.forEach(client -> client.send(message));
+  private synchronized void toAll(String command, Consumer<ServerHandler> onSend) {
+    clientHandlers.forEach(client -> { client.send(command, ""); onSend.accept(client);});
   }
 
   void addToLog(String message) {
@@ -109,13 +113,10 @@ public class Server extends Thread {
   public void close() {
     try {
       socket.close();
-      for (ServerHandler client : clientHandlers) {
-        client.send(new Message("exit"));
-        client.close();
-      }
     } catch (IOException e) {
      addToLog("Error: Failed to close socket");
     }
+    toAll("exit", ServerHandler::close);
     interrupt();
   }
 }

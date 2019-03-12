@@ -1,6 +1,5 @@
 package com.dicegame.controllers;
 
-import com.dicegame.chat.content.Message;
 import com.dicegame.chat.endpoints.Client;
 import com.dicegame.interfaces.Stoppable;
 import com.dicegame.utils.AlertFactory;
@@ -65,7 +64,7 @@ public class ClientMenuController implements Initializable, Stoppable {
   @FXML
   public void onSend() {
     if (!messageField.getText().equals("")) {
-      client.send(new Message("message", messageField.getText()));
+      client.send("message", messageField.getText());
       messageField.setText("");
     }
   }

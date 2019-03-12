@@ -38,7 +38,7 @@ public class Client extends Thread {
       }
     });
 
-    send(new Message("name", name));
+    send("name", name);
   }
 
   public ObservableList<String> getChatLog() {
@@ -49,9 +49,9 @@ public class Client extends Thread {
     return clientSocket;
   }
 
-  public void send(Message message) {
+  public void send(String command, String body) {
     try {
-      out.writeObject(message);
+      out.writeObject(new Message(command, body));
     } catch (IOException e) {
       e.printStackTrace();
       addToLog("Error: Failed to send message");
@@ -90,7 +90,7 @@ public class Client extends Thread {
 
   public void close() {
     if (!clientSocket.isClosed()) {
-      send(new Message("exit"));
+      send("exit", "");
     }
     try {
       clientSocket.close();

@@ -1,6 +1,5 @@
 package com.dicegame.controllers;
 
-import com.dicegame.chat.content.Message;
 import com.dicegame.chat.endpoints.Server;
 import com.dicegame.interfaces.Stoppable;
 import com.dicegame.utils.AlertFactory;
@@ -39,8 +38,8 @@ public class ServerMenuController implements Initializable, Stoppable {
     serverLog.setItems(server.getServerLog());
     clientList.setItems(server.getClientNames());
 
-    server.addHandler("message", (client, body) -> client.getBaseServer().toAll(
-        new Message("message", client.getChatName() + "> "  + body)
+    server.addHandler("message", (client, body) ->client.getBaseServer().toAll(
+        "message", client.getChatName() + "> "  + body
     ));
   }
 

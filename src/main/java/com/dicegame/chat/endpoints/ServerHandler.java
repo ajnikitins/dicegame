@@ -48,17 +48,17 @@ public class ServerHandler extends Thread {
 
       if (!nameMessage.getCommand().equals("name") || nameMessage.getBody().equals("")) {
         baseServer.addToLog("Error: Invalid name command");
-        send(new Message("error", "NoName"));
+        send("error", "NoName");
         throw new SocketException();
       }
 
       this.clientName = nameMessage.getBody();
       Platform.runLater(() -> baseServer.getClientNames().add(getChatName()));
 
-      baseServer.toAll(new Message("message", getChatName() + " has joined!"));
+      baseServer.toAll("message", getChatName() + " has joined!");
 
       if (baseServer.getClientHandlers().size() > baseServer.getRoomSize()) {
-        send(new Message("error", "ReachedMaxRoom"));
+        send("error", "ReachedMaxRoom");
         baseServer.clientDisconnected(this);
       }
 
@@ -72,10 +72,10 @@ public class ServerHandler extends Thread {
     }
   }
 
-  void send(Message message) {
+  void send(String command, String body) {
     try {
       if (!clientSocket.isClosed()) {
-        out.writeObject(message);
+        out.writeObject(new Message(command, body));
       }
     } catch (IOException e) {
       baseServer.addToLog("Error: Failed to send message");
