@@ -29,7 +29,7 @@ public class ServerMenuController implements Initializable, Stoppable {
 
   void createServer(int port, int roomSize) {
     try {
-      server = new Server(port, roomSize, this);
+      server = new Server(port, roomSize, playerList);
     } catch (IOException e) {
       System.out.println("Error: Invalid Port");
 
@@ -61,18 +61,7 @@ public class ServerMenuController implements Initializable, Stoppable {
     clientList.setItems(playerList);
   }
 
-  public void addPlayer(String name) {
-    playerList.add(new Player(name));
-  }
 
-  public void removeByName(String name) {
-    for (Player player : playerList) {
-      if (player.getName().equals(name)) {
-        playerList.remove(player);
-        return;
-      }
-    }
-  }
 
   @Override
   public void stop() {

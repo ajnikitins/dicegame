@@ -53,7 +53,7 @@ public class ServerHandler extends Thread {
       }
 
       this.clientName = nameMessage.getBody();
-      Platform.runLater(() -> baseServer.getController().addPlayer(getChatName()));
+      Platform.runLater(() -> baseServer.addPlayer(getChatName()));
 
       baseServer.toAll("message", getChatName() + " has joined!");
 

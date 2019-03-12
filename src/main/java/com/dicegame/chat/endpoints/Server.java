@@ -1,7 +1,7 @@
 package com.dicegame.chat.endpoints;
 
 import com.dicegame.chat.content.Message;
-import com.dicegame.controllers.ServerMenuController;
+import com.dicegame.chat.content.Player;
 import com.dicegame.interfaces.EventHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,12 +22,12 @@ public class Server extends Thread {
   private ObservableList<String> serverLog;
   private int roomSize;
   private Map<String, EventHandler<ServerHandler>> eventHandlers;
-  private ServerMenuController controller;
+  private ObservableList<Player> playerList;
 
-  public Server(int port, int roomSize, ServerMenuController controller) throws IOException {
+  public Server(int port, int roomSize, ObservableList<Player> playerList) throws IOException {
     this.roomSize = roomSize;
     this.serverLog = FXCollections.observableArrayList();
-    this.controller = controller;
+    this.playerList = playerList;
     this.clientHandlers = new CopyOnWriteArrayList<>();
     this.socket = new ServerSocket(port);
     this.eventHandlers = new HashMap<>();
@@ -45,10 +45,6 @@ public class Server extends Thread {
 
   CopyOnWriteArrayList<ServerHandler> getClientHandlers() {
     return clientHandlers;
-  }
-
-  ServerMenuController getController() {
-    return controller;
   }
 
   @Override
@@ -74,7 +70,7 @@ public class Server extends Thread {
   synchronized void clientDisconnected(ServerHandler client) {
     client.close();
     clientHandlers.remove(client);
-    Platform.runLater(() -> controller.removeByName(client.getChatName()));
+    Platform.runLater(() -> removeByName(client.getChatName()));
     addToLog("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
     toAll("message", client.getChatName() + " has disconnected!");
   }
@@ -105,6 +101,19 @@ public class Server extends Thread {
 
   private synchronized void toAll(String command, Consumer<ServerHandler> onSend) {
     clientHandlers.forEach(client -> { client.send(command, ""); onSend.accept(client);});
+  }
+
+  void addPlayer(String name) {
+    playerList.add(new Player(name));
+  }
+
+  private void removeByName(String name) {
+    for (Player player : playerList) {
+      if (player.getName().equals(name)) {
+        playerList.remove(player);
+        return;
+      }
+    }
   }
 
   void addToLog(String message) {
