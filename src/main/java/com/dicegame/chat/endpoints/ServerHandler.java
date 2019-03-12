@@ -57,7 +57,7 @@ public class ServerHandler extends Thread {
 
       baseServer.toAll(new Message("message", getChatName() + " has joined!"));
 
-      if (baseServer.getClients().size() > baseServer.getRoomSize()) {
+      if (baseServer.getClientHandlers().size() > baseServer.getRoomSize()) {
         send(new Message("error", "ReachedMaxRoom"));
         baseServer.clientDisconnected(this);
       }

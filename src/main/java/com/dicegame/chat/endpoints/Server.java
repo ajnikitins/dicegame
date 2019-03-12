@@ -16,7 +16,7 @@ import javafx.collections.ObservableList;
 public class Server extends Thread {
 
   private ServerSocket socket;
-  private CopyOnWriteArrayList<ServerHandler> clients;
+  private CopyOnWriteArrayList<ServerHandler> clientHandlers;
   private ObservableList<String> serverLog;
   private ObservableList<String> clientNames;
   private int roomSize;
@@ -26,7 +26,7 @@ public class Server extends Thread {
     this.roomSize = roomSize;
     this.serverLog = FXCollections.observableArrayList();
     this.clientNames = FXCollections.observableArrayList();
-    this.clients = new CopyOnWriteArrayList<>();
+    this.clientHandlers = new CopyOnWriteArrayList<>();
     this.socket = new ServerSocket(port);
     this.eventHandlers = new HashMap<>();
 
@@ -45,8 +45,8 @@ public class Server extends Thread {
     return roomSize;
   }
 
-  CopyOnWriteArrayList<ServerHandler> getClients() {
-    return clients;
+  CopyOnWriteArrayList<ServerHandler> getClientHandlers() {
+    return clientHandlers;
   }
 
   @Override
@@ -58,9 +58,9 @@ public class Server extends Thread {
         addToLog("Client " + clientSocket.getRemoteSocketAddress() + " connected");
 
         ServerHandler clientHandler = new ServerHandler(this, clientSocket);
-        clients.add(clientHandler);
+        clientHandlers.add(clientHandler);
         clientHandler.setDaemon(true);
-        clientHandler.setName("Client Thread " + clients.size());
+        clientHandler.setName("Client Thread " + clientHandlers.size());
         clientHandler.start();
       }
     } catch (SocketException ignored) {
@@ -71,7 +71,7 @@ public class Server extends Thread {
 
   synchronized void clientDisconnected(ServerHandler client) {
     client.close();
-    clients.remove(client);
+    clientHandlers.remove(client);
     Platform.runLater(() -> clientNames.remove(client.getChatName()));
     addToLog("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
     toAll(new Message("message", client.getChatName() + " has disconnected!"));
@@ -99,7 +99,7 @@ public class Server extends Thread {
 
 
   public synchronized void toAll(Message message) {
-    clients.forEach(client -> client.send(message));
+    clientHandlers.forEach(client -> client.send(message));
   }
 
   void addToLog(String message) {
@@ -109,7 +109,7 @@ public class Server extends Thread {
   public void close() {
     try {
       socket.close();
-      for (ServerHandler client : clients) {
+      for (ServerHandler client : clientHandlers) {
         client.send(new Message("exit"));
         client.close();
       }
