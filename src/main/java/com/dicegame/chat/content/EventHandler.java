@@ -1,4 +1,4 @@
-package com.dicegame.interfaces;
+package com.dicegame.chat.content;
 
 @FunctionalInterface
 public interface EventHandler<T> {

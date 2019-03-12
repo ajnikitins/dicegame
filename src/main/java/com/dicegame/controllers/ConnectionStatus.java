@@ -1,4 +1,4 @@
-package com.dicegame.enums;
+package com.dicegame.controllers;
 
 public enum ConnectionStatus {
   CONNECTED, DISCONNECTED

@@ -1,4 +1,4 @@
-package com.dicegame.interfaces;
+package com.dicegame.chat.endpoints;
 
 public interface Stoppable {
   void stop();
