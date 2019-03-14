@@ -2,11 +2,12 @@ package com.dicegame.controllers;
 
 import com.dicegame.chat.content.Player;
 import com.dicegame.chat.endpoints.Server;
-import com.dicegame.interfaces.Stoppable;
+import com.dicegame.chat.endpoints.Stoppable;
 import com.dicegame.utils.AlertFactory;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -19,24 +20,26 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 public class ServerMenuController implements Initializable, Stoppable {
 
-  @FXML private ListView<String> serverLog;
+  @FXML private ListView<String> serverLogList;
   @FXML private TableView<Player> clientList;
   @FXML private TableColumn<Player, String> nameColumn;
   @FXML private TableColumn<Player, Integer> scoreColumn;
   @FXML private ObservableList<Player> playerList;
 
+  private ObservableList<String> serverLog;
+
   private Server server;
 
   void createServer(int port, int roomSize) {
     try {
-      server = new Server(port, roomSize, playerList);
+      server = new Server(port, roomSize);
     } catch (IOException e) {
       System.out.println("Error: Invalid Port");
 
       AlertFactory.showAlert(
           AlertType.ERROR,
           "Port is already in use, try again!",
-          () -> serverLog.getScene().getWindow().hide()
+          () -> serverLogList.getScene().getWindow().hide()
       );
       return;
     }
@@ -44,11 +47,19 @@ public class ServerMenuController implements Initializable, Stoppable {
     server.setName("Server Thread");
     server.setDaemon(true);
     server.start();
-    serverLog.setItems(server.getServerLog());
 
-    server.addHandler("message", (client, body) ->client.getBaseServer().toAll(
-        "message", client.getChatName() + "> "  + body
-    ));
+    server.addHandler("log", (e) -> Platform.runLater(() -> serverLog.add(e.getBody())));
+
+    server.addHandler("join", (e) -> Platform.runLater(() -> playerList.add(new Player(e.getBody()))));
+
+    server.addHandler("leave", (e) -> {
+      for (Player player : playerList) {
+        if (player.getName().equals(e.getCaller().getClientName())) {
+          Platform.runLater(() -> playerList.remove(player));
+          return;
+        }
+      }
+    });
   }
 
   @Override
@@ -59,6 +70,9 @@ public class ServerMenuController implements Initializable, Stoppable {
     scoreColumn.setCellValueFactory(new PropertyValueFactory<>("score"));
 
     clientList.setItems(playerList);
+
+    serverLog = FXCollections.observableArrayList();
+    serverLogList.setItems(serverLog);
   }
 
 

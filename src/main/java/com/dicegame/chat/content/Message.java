@@ -17,20 +17,23 @@ public class Message implements Serializable {
     this.body = "";
   }
 
-  public String getCommand() {
+  String getCommand() {
     return command;
   }
 
-  public String getBody() {
+  String getBody() {
     return body;
   }
 
   @Override
   public String toString() {
     String res = command;
+
     if (!body.equals("")) {
       res += " " + body;
     }
+
     return res;
   }
+
 }

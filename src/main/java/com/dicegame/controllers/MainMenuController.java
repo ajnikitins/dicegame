@@ -1,8 +1,6 @@
 package com.dicegame.controllers;
 
-import com.dicegame.enums.ConnectionRole;
-import com.dicegame.enums.ConnectionStatus;
-import com.dicegame.interfaces.Stoppable;
+import com.dicegame.chat.endpoints.Stoppable;
 import com.dicegame.utils.AlertFactory;
 import com.dicegame.utils.Validations;
 import java.io.IOException;

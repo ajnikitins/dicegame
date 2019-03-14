@@ -18,7 +18,6 @@ public class Main extends Application {
 
     primaryStage.setTitle("Poker Dice");
     primaryStage.setScene(scene);
-    primaryStage.setResizable(false);
     primaryStage.show();
 
     primaryStage.onCloseRequestProperty().setValue(e -> Platform.exit());

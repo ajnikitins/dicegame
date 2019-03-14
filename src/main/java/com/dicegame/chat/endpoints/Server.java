@@ -1,8 +1,7 @@
 package com.dicegame.chat.endpoints;
 
-import com.dicegame.chat.content.Message;
-import com.dicegame.chat.content.Player;
-import com.dicegame.interfaces.EventHandler;
+import com.dicegame.chat.content.Event;
+import com.dicegame.chat.content.EventHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,41 +9,51 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 public class Server extends Thread {
 
   private ServerSocket socket;
-  private CopyOnWriteArrayList<ServerHandler> clientHandlers;
-  private ObservableList<String> serverLog;
   private int roomSize;
+  private CopyOnWriteArrayList<ServerHandler> clientHandlers;
   private Map<String, EventHandler<ServerHandler>> eventHandlers;
-  private ObservableList<Player> playerList;
 
-  public Server(int port, int roomSize, ObservableList<Player> playerList) throws IOException {
-    this.roomSize = roomSize;
-    this.serverLog = FXCollections.observableArrayList();
-    this.playerList = playerList;
-    this.clientHandlers = new CopyOnWriteArrayList<>();
+  public Server(int port, int roomSize) throws IOException {
     this.socket = new ServerSocket(port);
+
+    this.roomSize = roomSize;
+    this.clientHandlers = new CopyOnWriteArrayList<>();
     this.eventHandlers = new HashMap<>();
 
-    addHandler("exit", (client, body) -> clientDisconnected(client));
+    setDefaultEventHandlers();
   }
 
-  public ObservableList<String> getServerLog() {
-    return serverLog;
-  }
+  private void setDefaultEventHandlers() {
+    addHandler("log", (e) -> System.out.println(e.getBody()));
 
-  int getRoomSize() {
-    return roomSize;
-  }
+    addHandler("exit", (e) -> clientDisconnected(e.getCaller()));
 
-  CopyOnWriteArrayList<ServerHandler> getClientHandlers() {
-    return clientHandlers;
+    addHandler("message", (e) -> e.getCaller().getBaseServer().toAll(
+        "message", e.getCaller().getClientName() + "> "  + e.getBody()
+    ));
+
+    addHandler("name", (e) -> {
+      if (e.getBody().equals("")) {
+        e.getCaller().send("error", "EmptyName");
+        close();
+        return;
+      }
+
+      if (clientHandlers.size() > roomSize) {
+        e.getCaller().send("error", "ReachedMaxRoom");
+        close();
+        return;
+      }
+
+      e.getCaller().setClientName(e.getBody());
+      clientHandlers.add(e.getCaller());
+      handle(new Event<>(e.getCaller(),"join", e.getBody()));
+      toAll("join", e.getBody());
+    });
   }
 
   @Override
@@ -53,39 +62,46 @@ public class Server extends Thread {
       while (!isInterrupted()) {
         final Socket clientSocket = socket.accept();
 
-        addToLog("Client " + clientSocket.getRemoteSocketAddress() + " connected");
+        log("Client " + clientSocket.getRemoteSocketAddress() + " connected");
 
         ServerHandler clientHandler = new ServerHandler(this, clientSocket);
-        clientHandlers.add(clientHandler);
         clientHandler.setDaemon(true);
         clientHandler.setName("Client Thread " + clientHandlers.size());
         clientHandler.start();
       }
     } catch (SocketException ignored) {
     } catch (IOException e) {
-      addToLog("Error: Failed to accept connection");
+      log("Error: Failed to accept connection");
     }
   }
 
-  synchronized void clientDisconnected(ServerHandler client) {
+  private synchronized void clientDisconnected(ServerHandler client) {
     client.close();
     clientHandlers.remove(client);
-    Platform.runLater(() -> removeByName(client.getChatName()));
-    addToLog("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
-    toAll("message", client.getChatName() + " has disconnected!");
+    handle(new Event<>(client,"leave", client.getClientName()));
+    log("Client " + client.getClientSocket().getRemoteSocketAddress() + " disconnected");
+    toAll("leave", client.getClientName());
   }
 
-  synchronized void handle(ServerHandler client, Message message) {
-    System.out.println("Received " + message);
+  synchronized void handle(Event<ServerHandler> e) {
+    if (e.getCaller() != null) {
+      if (!clientHandlers.contains(e.getCaller())) {
+        if (!e.getCommand().equals("name")) {
+          e.getCaller().send("error", "NoName");
+          e.getCaller().close();
+          return;
+        }
+      }
 
-    addToLog("From " + client.getClientSocket().getRemoteSocketAddress()
-        + " received command: " + message.getCommand()
-        + " with body: " + message.getBody()
-    );
+      log("From " + e.getCaller().getClientSocket().getRemoteSocketAddress()
+          + " received command: " + e.getCommand()
+          + " with body: " + e.getBody()
+      );
+    }
 
     for (Map.Entry<String, EventHandler<ServerHandler>> entry : eventHandlers.entrySet()) {
-      if (entry.getKey().equals(message.getCommand())) {
-        entry.getValue().handle(client, message.getBody());
+      if (entry.getKey().equals(e.getCommand())) {
+        entry.getValue().handle(e);
         return;
       }
     }
@@ -95,38 +111,26 @@ public class Server extends Thread {
     eventHandlers.put(event, handler);
   }
 
-  public synchronized void toAll(String command, String body) {
+  private void toAll(String command, String body) {
     clientHandlers.forEach(client -> client.send(command, body));
   }
 
-  private synchronized void toAll(String command, Consumer<ServerHandler> onSend) {
-    clientHandlers.forEach(client -> { client.send(command, ""); onSend.accept(client);});
+  private void closeAll() {
+    clientHandlers.forEach(ServerHandler::close);
   }
 
-  void addPlayer(String name) {
-    playerList.add(new Player(name));
-  }
-
-  private void removeByName(String name) {
-    for (Player player : playerList) {
-      if (player.getName().equals(name)) {
-        playerList.remove(player);
-        return;
-      }
-    }
-  }
-
-  void addToLog(String message) {
-    Platform.runLater(() -> serverLog.add(message));
+  void log(String body) {
+    handle(new Event<>(null,"log", body));
   }
 
   public void close() {
     try {
       socket.close();
     } catch (IOException e) {
-     addToLog("Error: Failed to close socket");
+     log("Error: Failed to close socket");
     }
-    toAll("exit", ServerHandler::close);
+    toAll("exit", "");
+    closeAll();
     interrupt();
   }
 }

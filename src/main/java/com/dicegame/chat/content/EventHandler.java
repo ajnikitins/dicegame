@@ -1,8 +1,9 @@
 package com.dicegame.chat.content;
 
 @FunctionalInterface
-public interface EventHandler<T> {
+public interface EventHandler<T extends Thread> {
 
-  void handle(T caller, String body);
+  // TODO: Add next() functionality
 
+  void handle(Event<T> event);
 }

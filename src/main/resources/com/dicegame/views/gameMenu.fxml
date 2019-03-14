@@ -6,36 +6,56 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<SplitPane dividerPositions="0.6" prefHeight="400.0" prefWidth="700.0" stylesheets="@../styles.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dicegame.controllers.ClientMenuController">
-   <BorderPane prefHeight="200.0" prefWidth="200.0">
-      <top>
-        <VBox BorderPane.alignment="CENTER">
-          <HBox alignment="CENTER">
-            <padding>
-              <Insets bottom="5.0" left="10.0" right="10.0" top="5.0"/>
-            </padding>
-            <Label fx:id="statusLabel" text="Status"/>
-            <Pane HBox.hgrow="ALWAYS"/>
-          </HBox>
-          <Separator prefWidth="200.0"/>
-          <Button fx:id="rollButton" alignment="CENTER" maxHeight="1.7976931348623157E308"
-            maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Roll"/>
-          <Separator prefWidth="200.0"/>
-        </VBox>
-      </top>
-      <center>
-       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="386.0" BorderPane.alignment="CENTER" />
-      </center>
-   </BorderPane>
-  <SplitPane dividerPositions="0.9296482412060302" orientation="VERTICAL" prefHeight="400.0" prefWidth="206.0">
-      <ListView fx:id="messageLog" prefHeight="200.0" prefWidth="200.0" />
-      <TextField fx:id="messageField" onAction="#onSend" />
+<GridPane prefHeight="400.0" prefWidth="724.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dicegame.controllers.ClientMenuController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="494.0" minWidth="10.0" prefWidth="404.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="323.0" minWidth="10.0" prefWidth="249.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints vgrow="SOMETIMES" />
+    <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+  <padding>
+    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+  </padding>
+  <HBox alignment="CENTER">
+    <Label fx:id="statusLabel" text="Status" />
+    <Pane HBox.hgrow="ALWAYS" />
+  </HBox>
+  <BorderPane prefHeight="400.0" prefWidth="419.0" GridPane.rowIndex="1">
+    <top>
+      <VBox BorderPane.alignment="CENTER">
+        <Button fx:id="rollButton" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Roll" />
+        <Separator prefWidth="200.0" />
+      </VBox>
+    </top>
+    <center>
+      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="414.0" BorderPane.alignment="CENTER" />
+    </center>
+  </BorderPane>
+  <SplitPane dividerPositions="0.9296482412060302" orientation="VERTICAL" prefHeight="400.0" prefWidth="206.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+    <ListView fx:id="chatLogList" prefHeight="200.0" prefWidth="200.0" />
+    <TextField fx:id="messageField" onAction="#onSend" />
   </SplitPane>
-</SplitPane>
+  <TableView fx:id="playerList" GridPane.columnIndex="1" GridPane.rowIndex="1">
+    <columns>
+      <TableColumn fx:id="nameColumn" editable="false" prefWidth="136.0" sortable="false" text="Name" />
+      <TableColumn fx:id="scoreColumn" editable="false" minWidth="0.0" prefWidth="52.0" sortable="false" text="Score" />
+    </columns>
+  </TableView>
+  <Label text="Client List:" GridPane.columnIndex="1" />
+  <Label text="Chat:" GridPane.columnIndex="2" />
+</GridPane>

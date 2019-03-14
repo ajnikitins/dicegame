@@ -1,13 +1,12 @@
 package com.dicegame.chat.endpoints;
 
+import com.dicegame.chat.content.Event;
 import com.dicegame.chat.content.Message;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.SocketException;
-import javafx.application.Platform;
 
 public class ServerHandler extends Thread {
 
@@ -25,7 +24,7 @@ public class ServerHandler extends Thread {
       out = new ObjectOutputStream(clientSocket.getOutputStream());
       in = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
     } catch (IOException e) {
-      baseServer.addToLog("Error: Failed to open streams");
+      baseServer.log("Error: Failed to open streams");
     }
   }
 
@@ -33,42 +32,26 @@ public class ServerHandler extends Thread {
     return clientSocket;
   }
 
-  public String getChatName() {
-    return clientName + " - " + clientSocket.getPort();
+  void setClientName(String clientName) {
+    this.clientName =  clientName + " - " + clientSocket.getPort();
   }
 
-  public Server getBaseServer() {
+  public String getClientName() {
+    return clientName;
+  }
+
+  Server getBaseServer() {
     return baseServer;
   }
 
   @Override
   public void run() {
     try {
-      Message nameMessage = (Message) in.readObject();
-
-      if (!nameMessage.getCommand().equals("name") || nameMessage.getBody().equals("")) {
-        baseServer.addToLog("Error: Invalid name command");
-        send("error", "NoName");
-        throw new SocketException();
-      }
-
-      this.clientName = nameMessage.getBody();
-      Platform.runLater(() -> baseServer.addPlayer(getChatName()));
-
-      baseServer.toAll("message", getChatName() + " has joined!");
-
-      if (baseServer.getClientHandlers().size() > baseServer.getRoomSize()) {
-        send("error", "ReachedMaxRoom");
-        baseServer.clientDisconnected(this);
-      }
-
       while (!isInterrupted()) {
-        baseServer.handle(this, (Message) in.readObject());
+        baseServer.handle(new Event<>(this, (Message) in.readObject()));
       }
-    } catch (SocketException e) {
-      baseServer.clientDisconnected(this);
     } catch (IOException | ClassNotFoundException e) {
-      baseServer.addToLog("Error: Failed to read input");
+      baseServer.log("Error: Failed to read input");
     }
   }
 
@@ -78,7 +61,7 @@ public class ServerHandler extends Thread {
         out.writeObject(new Message(command, body));
       }
     } catch (IOException e) {
-      baseServer.addToLog("Error: Failed to send message");
+      baseServer.log("Error: Failed to send message");
       e.printStackTrace();
     }
   }
@@ -87,7 +70,7 @@ public class ServerHandler extends Thread {
     try {
       clientSocket.close();
     } catch (IOException e) {
-      baseServer.addToLog("Error: Failed to close socket");
+      baseServer.log("Error: Failed to close socket");
     }
     interrupt();
   }

@@ -23,7 +23,7 @@
   </padding>
   <Label text="Server Log:" />
   <Label text="Client List:" GridPane.columnIndex="1" />
-  <ListView fx:id="serverLog" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+  <ListView fx:id="serverLogList" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
    <TableView fx:id="clientList" GridPane.columnIndex="1" GridPane.rowIndex="1">
      <columns>
        <TableColumn fx:id="nameColumn" editable="false" prefWidth="99.0" sortable="false" text="Name" />
