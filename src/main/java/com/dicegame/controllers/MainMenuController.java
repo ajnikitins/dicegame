@@ -1,6 +1,5 @@
 package com.dicegame.controllers;
 
-import com.dicegame.chat.endpoints.Stoppable;
 import com.dicegame.utils.AlertFactory;
 import com.dicegame.utils.Validations;
 import java.io.IOException;

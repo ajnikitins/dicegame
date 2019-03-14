@@ -2,7 +2,6 @@ package com.dicegame.controllers;
 
 import com.dicegame.chat.content.Player;
 import com.dicegame.chat.endpoints.Server;
-import com.dicegame.chat.endpoints.Stoppable;
 import com.dicegame.utils.AlertFactory;
 import java.io.IOException;
 import java.net.URL;
