@@ -1,6 +1,6 @@
 package com.dicegame.controllers;
 
-import com.dicegame.chat.content.Player;
+import com.dicegame.game.Player;
 import com.dicegame.chat.endpoints.Client;
 import com.dicegame.utils.AlertFactory;
 import java.io.IOException;
