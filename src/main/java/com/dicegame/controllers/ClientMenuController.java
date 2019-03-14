@@ -48,10 +48,6 @@ public class ClientMenuController implements Initializable, Stoppable {
       return;
     }
 
-    client.setDaemon(true);
-    client.setName("Client Thread");
-    client.start();
-
     client.getEventManager().addHandler("message", (e) -> Platform.runLater(() -> chatLog.add(e.getBody())));
 
     client.getEventManager().addHandler("join", (e) -> Platform.runLater(() -> {
@@ -66,7 +62,7 @@ public class ClientMenuController implements Initializable, Stoppable {
 
     client.getEventManager().addHandler("error", (e) -> Platform.runLater(() -> {
       try {
-        e.getCaller().getClientSocket().close();
+        e.getCaller().getSocket().close();
       } catch (IOException ioe) {
         chatLog.add("Error: Failed to close socket");
       }
@@ -85,7 +81,7 @@ public class ClientMenuController implements Initializable, Stoppable {
   @FXML
   public void onSend() {
     if (!messageField.getText().equals("")) {
-      client.send("message", messageField.getText());
+      client.getPipe().send("message", messageField.getText());
       messageField.setText("");
     }
   }
@@ -119,7 +115,7 @@ public class ClientMenuController implements Initializable, Stoppable {
   @Override
   public void stop() {
     if (client != null) {
-      client.close();
+      client.getPipe().close();
     }
   }
 

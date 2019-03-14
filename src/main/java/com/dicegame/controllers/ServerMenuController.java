@@ -56,7 +56,7 @@ public class ServerMenuController implements Initializable, Stoppable {
 
     server.getEventManager().addHandler("leave", (e) -> {
       for (Player player : playerList) {
-        if (player.getName().equals(e.getCaller().getClientName())) {
+        if (player.getName().equals(e.getCaller().getPipeName())) {
           Platform.runLater(() -> playerList.remove(player));
           return;
         }
