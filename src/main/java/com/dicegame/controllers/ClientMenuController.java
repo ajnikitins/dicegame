@@ -52,19 +52,19 @@ public class ClientMenuController implements Initializable, Stoppable {
     client.setName("Client Thread");
     client.start();
 
-    client.addHandler("message", (e) -> Platform.runLater(() -> chatLog.add(e.getBody())));
+    client.getEventManager().addHandler("message", (e) -> Platform.runLater(() -> chatLog.add(e.getBody())));
 
-    client.addHandler("join", (e) -> Platform.runLater(() -> {
+    client.getEventManager().addHandler("join", (e) -> Platform.runLater(() -> {
       addPlayer(e.getBody());
       chatLog.add(e.getBody() + " has joined!");
     }));
 
-    client.addHandler("leave", (e) -> Platform.runLater(() -> {
+    client.getEventManager().addHandler("leave", (e) -> Platform.runLater(() -> {
       removeByName(e.getBody());
       chatLog.add(e.getBody() + " has disconnected!");
     }));
 
-    client.addHandler("error", (e) -> Platform.runLater(() -> {
+    client.getEventManager().addHandler("error", (e) -> Platform.runLater(() -> {
       try {
         e.getCaller().getClientSocket().close();
       } catch (IOException ioe) {
@@ -115,7 +115,6 @@ public class ClientMenuController implements Initializable, Stoppable {
       }
     }
   }
-
 
   @Override
   public void stop() {

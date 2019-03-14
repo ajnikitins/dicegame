@@ -1,29 +1,27 @@
 package com.dicegame.chat.endpoints;
 
-import com.dicegame.chat.content.Event;
-import com.dicegame.chat.content.EventHandler;
 import com.dicegame.chat.content.Message;
+import com.dicegame.chat.events.Event;
+import com.dicegame.chat.events.EventManager;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Client extends Thread {
 
   private Socket clientSocket;
   private ObjectInputStream in;
   private ObjectOutputStream out;
-  private Map<String, EventHandler<Client>> eventHandlers;
+  private EventManager<Client> eventManager;
 
   public Client(String ip, int port, String name) throws IOException {
-    clientSocket = new Socket(ip, port);
-    out = new ObjectOutputStream(clientSocket.getOutputStream());
-    in = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-    eventHandlers = new HashMap<>();
+    this.clientSocket = new Socket(ip, port);
+    this.out = new ObjectOutputStream(clientSocket.getOutputStream());
+    this.in = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+    this.eventManager = new EventManager<>();
 
     setDefaultEventHandlers();
 
@@ -34,9 +32,13 @@ public class Client extends Thread {
     return clientSocket;
   }
 
+  public EventManager<Client> getEventManager() {
+    return eventManager;
+  }
+
   private void setDefaultEventHandlers() {
-    addHandler("log", (e) -> System.out.println(e.getBody()));
-    addHandler("exit", (e) -> {
+    eventManager.addHandler("log", (e) -> System.out.println(e.getBody()));
+    eventManager.addHandler("exit", (e) -> {
       try {
         clientSocket.close();
       } catch (IOException ioe) {
@@ -60,7 +62,7 @@ public class Client extends Thread {
   public void run() {
     while (!isInterrupted()) {
       try {
-        handle(new Event<>(this, (Message) in.readObject()));
+        eventManager.handle(new Event<>(this, (Message) in.readObject()));
       } catch (SocketException e) {
         log("Disconnected from server");
         break;
@@ -70,21 +72,8 @@ public class Client extends Thread {
     }
   }
 
-  private void handle(Event<Client> event) {
-    for (Map.Entry<String, EventHandler<Client>> entry : eventHandlers.entrySet()) {
-      if (entry.getKey().equals(event.getCommand())) {
-        entry.getValue().handle(event);
-        return;
-      }
-    }
-  }
-
   private void log(String body) {
-    handle(new Event<>(null,"log", body));
-  }
-
-  public void addHandler(String event, EventHandler<Client> handler) {
-    eventHandlers.put(event, handler);
+    eventManager.handle(new Event<>(null,"log", body));
   }
 
   public void close() {

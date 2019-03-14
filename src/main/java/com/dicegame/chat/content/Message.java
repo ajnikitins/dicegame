@@ -17,11 +17,11 @@ public class Message implements Serializable {
     this.body = "";
   }
 
-  String getCommand() {
+  public String getCommand() {
     return command;
   }
 
-  String getBody() {
+  public String getBody() {
     return body;
   }
 

@@ -1,6 +1,8 @@
-package com.dicegame.chat.content;
+package com.dicegame.chat.events;
 
-public class Event<T extends Thread> {
+import com.dicegame.chat.content.Message;
+
+public class Event<T> {
 
   private Message message;
   private T caller;
@@ -37,10 +39,6 @@ public class Event<T extends Thread> {
 
     if (!getBody().equals("")) {
       res += " " + getBody();
-    }
-
-    if (caller != null) {
-      res += " by " + caller.getName();
     }
 
     return res;

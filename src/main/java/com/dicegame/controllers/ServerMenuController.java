@@ -26,7 +26,6 @@ public class ServerMenuController implements Initializable, Stoppable {
   @FXML private ObservableList<Player> playerList;
 
   private ObservableList<String> serverLog;
-
   private Server server;
 
   void createServer(int port, int roomSize) {
@@ -47,11 +46,15 @@ public class ServerMenuController implements Initializable, Stoppable {
     server.setDaemon(true);
     server.start();
 
-    server.addHandler("log", (e) -> Platform.runLater(() -> serverLog.add(e.getBody())));
+    server.getEventManager().addHandler("log",
+        (e) -> Platform.runLater(() -> serverLog.add(e.getBody()))
+    );
 
-    server.addHandler("join", (e) -> Platform.runLater(() -> playerList.add(new Player(e.getBody()))));
+    server.getEventManager().addHandler("join",
+        (e) -> Platform.runLater(() -> playerList.add(new Player(e.getBody())))
+    );
 
-    server.addHandler("leave", (e) -> {
+    server.getEventManager().addHandler("leave", (e) -> {
       for (Player player : playerList) {
         if (player.getName().equals(e.getCaller().getClientName())) {
           Platform.runLater(() -> playerList.remove(player));
@@ -73,8 +76,6 @@ public class ServerMenuController implements Initializable, Stoppable {
     serverLog = FXCollections.observableArrayList();
     serverLogList.setItems(serverLog);
   }
-
-
 
   @Override
   public void stop() {

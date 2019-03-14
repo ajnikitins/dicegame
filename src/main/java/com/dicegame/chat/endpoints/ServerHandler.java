@@ -1,6 +1,6 @@
 package com.dicegame.chat.endpoints;
 
-import com.dicegame.chat.content.Event;
+import com.dicegame.chat.events.Event;
 import com.dicegame.chat.content.Message;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class ServerHandler extends Thread {
   public void run() {
     try {
       while (!isInterrupted()) {
-        baseServer.handle(new Event<>(this, (Message) in.readObject()));
+        baseServer.getEventManager().handle(new Event<>(this, (Message) in.readObject()));
       }
     } catch (IOException | ClassNotFoundException e) {
       baseServer.log("Error: Failed to read input");
