@@ -9,23 +9,9 @@ public class Client {
   private EventManager<Pipe> eventManager;
   private Pipe pipe;
 
-  public Client(String ip, int port, String name) throws IOException {
+  public Client() {
     this.eventManager = new EventManager<>();
     setDefaultEventHandlers();
-
-    this.pipe = new Pipe(new Socket(ip, port), eventManager);
-
-    pipe.setDaemon(true);
-    pipe.setName("Client Thread");
-
-    pipe.setOnClose((pipe) -> {
-      if (!pipe.getSocket().isClosed()) {
-        pipe.send("exit", "");
-      }
-    });
-
-    pipe.start();
-    pipe.send("name", name);
   }
 
   public EventManager<Pipe> getEventManager() {
@@ -44,5 +30,21 @@ public class Client {
         eventManager.log("Error: Failed to close socket");
       }
     });
+  }
+
+  public void start(String ip, int port, String name) throws IOException {
+    this.pipe = new Pipe(new Socket(ip, port), eventManager);
+
+    pipe.setDaemon(true);
+    pipe.setName("Client Thread");
+
+    pipe.setOnClose((pipe) -> {
+      if (!pipe.getSocket().isClosed()) {
+        pipe.send("exit", "");
+      }
+    });
+
+    pipe.start();
+    pipe.send("name", name);
   }
 }

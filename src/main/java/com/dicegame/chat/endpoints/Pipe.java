@@ -19,13 +19,14 @@ public class Pipe extends Thread {
   private ObjectOutputStream out;
   private EventManager<Pipe> eventManager;
   private CopyOnWriteArrayList<Pipe> pipes;
-  private String pipeName;
+  private String pipeName = "";
 
   private Consumer<Pipe> onClose = (pipe) -> {};
 
   Pipe(Socket socket, EventManager<Pipe> eventManager) throws IOException {
-    this.eventManager = eventManager;
     this.socket = socket;
+    this.eventManager = eventManager;
+
     this.pipes = new CopyOnWriteArrayList<>();
     this.pipes.add(this);
 

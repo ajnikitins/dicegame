@@ -23,28 +23,13 @@ public class ServerMenuController implements Initializable, Stoppable {
   @FXML private TableView<Player> clientList;
   @FXML private TableColumn<Player, String> nameColumn;
   @FXML private TableColumn<Player, Integer> scoreColumn;
-  @FXML private ObservableList<Player> playerList;
 
-  private ObservableList<String> serverLog;
   private Server server;
+  private ObservableList<Player> playerList;
+  private ObservableList<String> serverLog;
 
   void createServer(int port, int roomSize) {
-    try {
-      server = new Server(port, roomSize);
-    } catch (IOException e) {
-      System.out.println("Error: Invalid Port");
-
-      AlertFactory.showAlert(
-          AlertType.ERROR,
-          "Port is already in use, try again!",
-          () -> serverLogList.getScene().getWindow().hide()
-      );
-      return;
-    }
-
-    server.setName("Server Thread");
-    server.setDaemon(true);
-    server.start();
+    server = new Server(roomSize);
 
     server.getEventManager().addHandler("log",
         (e) -> Platform.runLater(() -> serverLog.add(e.getBody()))
@@ -62,6 +47,18 @@ public class ServerMenuController implements Initializable, Stoppable {
         }
       }
     });
+
+    try {
+      server.start(port);
+    } catch (IOException e) {
+      System.out.println("Error: Invalid Port");
+
+      AlertFactory.showAlert(
+          AlertType.ERROR,
+          "Port is already in use, try again!",
+          () -> serverLogList.getScene().getWindow().hide()
+      );
+    }
   }
 
   @Override
@@ -80,7 +77,7 @@ public class ServerMenuController implements Initializable, Stoppable {
   @Override
   public void stop() {
     if (server != null) {
-      server.close();
+      server.getServerPipe().close();
     }
   }
 }

@@ -4,19 +4,16 @@ import com.dicegame.chat.events.Event;
 import com.dicegame.chat.events.EventManager;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Server extends Thread {
+public class Server {
 
-  private ServerSocket socket;
+  private ServerPipe serverPipe;
   private int roomSize;
   private CopyOnWriteArrayList<Pipe> pipes;
   private EventManager<Pipe> eventManager;
 
-  public Server(int port, int roomSize) throws IOException {
-    this.socket = new ServerSocket(port);
-
+  public Server(int roomSize) {
     this.roomSize = roomSize;
     this.pipes = new CopyOnWriteArrayList<>();
     this.eventManager = new EventManager<>();
@@ -31,7 +28,12 @@ public class Server extends Thread {
           }
         }
 
-        eventManager.log("From " + e.getCaller().getSocket().getRemoteSocketAddress()
+        eventManager.log("From "
+            + (
+                e.getCaller().getPipeName().equals("")
+                ? e.getCaller().getSocket().getRemoteSocketAddress()
+                : e.getCaller().getPipeName()
+              )
             + " received command: " + e.getCommand()
             + " with body: " + e.getBody()
         );
@@ -44,6 +46,10 @@ public class Server extends Thread {
     return eventManager;
   }
 
+  public ServerPipe getServerPipe() {
+    return serverPipe;
+  }
+
   private void setDefaultEventHandlers() {
     eventManager.addHandler("exit", (e) -> clientDisconnected(e.getCaller()));
 
@@ -54,21 +60,28 @@ public class Server extends Thread {
     eventManager.addHandler("name", (e) -> {
       if (e.getBody().equals("")) {
         e.getCaller().send("error", "EmptyName");
-        close();
+        serverPipe.close();
         return;
       }
 
       if (pipes.size() > roomSize) {
         e.getCaller().send("error", "ReachedMaxRoom");
-        close();
+        serverPipe.close();
         return;
       }
 
       e.getCaller().setPipeName(e.getBody());
       pipes.add(e.getCaller());
-      eventManager.handle(new Event<>(e.getCaller(),"join", e.getBody()));
-      e.getCaller().sendAll("join", e.getBody());
+      eventManager.handle(new Event<>(e.getCaller(),"join", e.getCaller().getPipeName()));
+      e.getCaller().sendAll("join", e.getCaller().getPipeName());
     });
+  }
+
+  public void start(int port) throws IOException {
+    this.serverPipe = new ServerPipe(new ServerSocket(port), eventManager, pipes);
+    serverPipe.setDaemon(true);
+    serverPipe.setName("Server Thread");
+    serverPipe.start();
   }
 
   private void clientDisconnected(Pipe pipe) {
@@ -77,40 +90,5 @@ public class Server extends Thread {
     eventManager.handle(new Event<>(pipe,"leave", pipe.getPipeName()));
     eventManager.log("Client " + pipe.getSocket().getRemoteSocketAddress() + " disconnected");
     pipe.sendAll("leave", pipe.getPipeName());
-  }
-
-  @Override
-  public void run() {
-    try {
-      while (!isInterrupted()) {
-        final Socket clientSocket = socket.accept();
-
-        eventManager.log("Client " + clientSocket.getRemoteSocketAddress() + " connected");
-
-        Pipe clientHandler = new Pipe(clientSocket, eventManager, pipes);
-        clientHandler.setDaemon(true);
-        clientHandler.setName("Handler Thread " + pipes.size());
-        clientHandler.start();
-      }
-    } catch (IOException e) {
-      eventManager.log("Error: Failed to accept connection");
-    }
-  }
-
-  public void close() {
-    closeAll();
-    try {
-      socket.close();
-    } catch (IOException e) {
-      eventManager.log("Error: Failed to close socket");
-    }
-    interrupt();
-  }
-
-  private void closeAll() {
-    pipes.forEach((pipe -> {
-      pipe.send("exit", "");
-      pipe.close();
-    }));
   }
 }

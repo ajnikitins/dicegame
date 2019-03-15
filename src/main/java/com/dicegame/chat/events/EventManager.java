@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EventManager<T> {
+
   private Map<String, EventHandler<T>> eventHandlers = new HashMap<>();
   private EventHandler<T> beforeHandle = (e) -> {};
 

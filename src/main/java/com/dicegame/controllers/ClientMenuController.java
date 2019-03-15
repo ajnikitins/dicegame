@@ -35,18 +35,7 @@ public class ClientMenuController implements Initializable, Stoppable {
   private ObservableList<Player> clientList;
 
   void createClient(String ip, int port, String name) {
-    try {
-      client = new Client(ip, port, name);
-    } catch (IOException e) {
-      System.out.println("Failed to create Client");
-
-      AlertFactory.showAlert(
-          AlertType.ERROR,
-          "Can't reach host, try again!",
-          () -> messageField.getScene().getWindow().hide()
-      );
-      return;
-    }
+    client = new Client();
 
     client.getEventManager().addHandler("message", (e) -> Platform.runLater(() -> chatLog.add(e.getBody())));
 
@@ -76,6 +65,18 @@ public class ClientMenuController implements Initializable, Stoppable {
           break;
       }
     }));
+
+    try {
+      client.start(ip, port, name);
+    } catch (IOException e) {
+      System.out.println("Failed to create Client");
+
+      AlertFactory.showAlert(
+          AlertType.ERROR,
+          "Can't reach host, try again!",
+          () -> messageField.getScene().getWindow().hide()
+      );
+    }
   }
 
   @FXML
@@ -118,5 +119,4 @@ public class ClientMenuController implements Initializable, Stoppable {
       client.getPipe().close();
     }
   }
-
 }
